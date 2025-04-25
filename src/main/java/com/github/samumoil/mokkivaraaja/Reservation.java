@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 public class Reservation {
 
-        // Remember to override every parameter and toString method!
         int id;
         LocalDate startDate;
         int nights;

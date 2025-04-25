@@ -1,7 +1,7 @@
 package com.github.samumoil.mokkivaraaja;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class CabinHandler {
 
@@ -18,7 +18,8 @@ public class CabinHandler {
 
     public CabinHandler(DatabaseWorker databaseWorker) {
         this.databaseWorker = databaseWorker;
-        allCabins = databaseWorker.getAllCabins();
+        ArrayList<ArrayList<String>> allCabinsArray = databaseWorker.getAllCabins();
+        // Still needs logic to create objects and put them to hashmap.
         updateCabinNames();
     } // Constructor for proper usage.
 
@@ -40,7 +41,16 @@ public class CabinHandler {
     }
 
     public boolean saveCabinToDatabase(Cabin cabin) {
-        databaseWorker.saveCabinToDatabase(cabin);
+        ArrayList<String> cabinInfo = new ArrayList<>();
+        cabinInfo.add(Integer.toString(cabin.getId()));
+        cabinInfo.add(cabin.getName());
+        cabinInfo.add(Integer.toString(cabin.getBeds()));
+        cabinInfo.add(cabin.getStreetAddress());
+        cabinInfo.add(cabin.getPostalCode());
+        cabinInfo.add(cabin.getCity());
+        cabinInfo.add(Float.toString(cabin.getPricePerNight()));
+
+        databaseWorker.saveCabinToDatabase(cabinInfo);
         updateAllCabinData();
         return true;
     }
