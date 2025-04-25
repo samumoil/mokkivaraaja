@@ -1,14 +1,14 @@
 package com.github.samumoil.mokkivaraaja;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class DatabaseWorker {
 
-    public HashMap<Integer, Cabin> getAllCabins(){
-        return new HashMap<>();
+    public ArrayList<ArrayList<String>> getAllCabins(){
+        return new ArrayList<>(new ArrayList<>());
     }
 
-    public boolean saveCabinToDatabase(Cabin cabin) {
+    public boolean saveCabinToDatabase(ArrayList<String> cabinInfo) {
         return true;
     }
 
