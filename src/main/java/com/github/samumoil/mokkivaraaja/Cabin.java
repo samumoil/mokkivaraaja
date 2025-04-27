@@ -59,6 +59,7 @@ public class Cabin {
             return pricePerNight;
         }
 
+        /*
         public void setName(String name) {
             this.name = name.trim();
         }
@@ -82,6 +83,8 @@ public class Cabin {
         public void setPricePerNight(float pricePerNight) {
             if (pricePerNight >= 0) this.pricePerNight = pricePerNight;
         }
+         */
+
 
 }
 

@@ -1,5 +1,6 @@
 package com.github.samumoil.mokkivaraaja;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class DatabaseWorker {
@@ -14,5 +15,9 @@ public class DatabaseWorker {
 
     public boolean removeCabin(int id){
        return true;
+    }
+
+    public ArrayList<ArrayList<String>> getReservations(LocalDate startDate, LocalDate endDate) {
+        return new ArrayList<>(new ArrayList<>());
     }
 }

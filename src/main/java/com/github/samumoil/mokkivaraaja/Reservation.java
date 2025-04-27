@@ -10,7 +10,7 @@ public class Reservation {
         LocalDate endDate;
         Customer customer;
         Cabin cabin;
-        float totalPrize;
+        float totalPrice;
 
         public Reservation() {
                 this.id = 0;
@@ -19,7 +19,7 @@ public class Reservation {
                 this.endDate = startDate.plusDays(nights);
                 this.customer = new Customer();
                 this.cabin = new Cabin();
-                this.totalPrize = cabin.getPricePerNight() * nights;
+                this.totalPrice = cabin.getPricePerNight() * nights;
         }
 
         public Reservation(int id, LocalDate startDate, int nights, Customer customer, Cabin cabin) {
@@ -29,7 +29,7 @@ public class Reservation {
                 this.endDate = startDate.plusDays(nights);
                 this.customer = customer;
                 this.cabin = cabin;
-                this.totalPrize = cabin.getPricePerNight() * nights;
+                this.totalPrice = cabin.getPricePerNight() * nights;
         }
 
         public int getId() {
@@ -56,32 +56,8 @@ public class Reservation {
                 return customer;
         }
 
-        public float getTotalPrize() {
-                return totalPrize;
-        }
-
-        public void setStartDate(LocalDate startDate) {
-                this.startDate = startDate;
-        }
-
-        public void setNights(int nights) {
-                if (nights >= 1) this.nights = nights;
-        }
-
-        public void setEndDate(LocalDate endDate) {
-                this.endDate = endDate;
-        }
-
-        public void setCustomer(Customer customer) {
-                this.customer = customer;
-        }
-
-        public void setCabin(Cabin cabin) {
-                this.cabin = cabin;
-        }
-
-        public void setTotalPrize(float totalPrize) {
-                if (totalPrize >= 0) this.totalPrize = totalPrize;
+        public float getTotalPrice() {
+                return totalPrice;
         }
 
 }
