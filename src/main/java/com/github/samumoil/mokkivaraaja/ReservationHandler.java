@@ -3,6 +3,9 @@ package com.github.samumoil.mokkivaraaja;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+/**
+ * This handler-class is not yet ready. Methods will change in the future.
+ */
 public class ReservationHandler {
 
     DatabaseWorker dbWorker;
