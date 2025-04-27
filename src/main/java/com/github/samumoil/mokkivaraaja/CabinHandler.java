@@ -3,6 +3,9 @@ package com.github.samumoil.mokkivaraaja;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This handler-class is not yet ready. Methods will change in the future.
+ */
 public class CabinHandler {
 
     HashMap<Integer, Cabin> allCabins;
