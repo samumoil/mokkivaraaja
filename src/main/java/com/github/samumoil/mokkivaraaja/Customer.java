@@ -14,8 +14,8 @@ public class Customer {
 
         public Customer(int id, String name, String phoneNumber) {
             this.id = id;
-            this.name = name;
-            this.phoneNumber = phoneNumber;
+            this.name = name.trim();
+            this.phoneNumber = phoneNumber.trim();
         }
 
         public int getId() {
@@ -28,14 +28,6 @@ public class Customer {
 
         public String getPhoneNumber() {
             return phoneNumber;
-        }
-
-        public void setName(String name) {
-            this.name = name.trim();
-        }
-
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber.trim();
         }
 
 }
