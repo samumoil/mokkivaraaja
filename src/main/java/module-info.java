@@ -4,6 +4,7 @@ module com.github.samumoil.mokkivaraaja {
     requires javafx.graphics;
     requires javafx.controls;
     requires java.naming;
+    requires javafx.controls;
 
   opens com.github.samumoil.mokkivaraaja;
   exports com.github.samumoil.mokkivaraaja;
