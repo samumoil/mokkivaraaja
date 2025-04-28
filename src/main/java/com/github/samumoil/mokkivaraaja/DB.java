@@ -8,22 +8,50 @@ import java.util.List;
 public class DB {
   private final DataSource dataSource;
 
-  DB(DataSource dataSource) {
+  public DB(DataSource dataSource) {
     this.dataSource = dataSource;
   }
 
-  public List<String> getNames() {
-    List<String> names = new ArrayList<>();
+  private List<String> fetchData(String tableName, String columnName) {
+    List<String> data = new ArrayList<>();
+    String query = "SELECT " + columnName + " FROM " + tableName;
+
     try (Connection dbConnection = dataSource.getConnection();
-         PreparedStatement st = dbConnection.prepareStatement("SELECT * FROM test");
+         PreparedStatement st = dbConnection.prepareStatement(query);
          ResultSet rs = st.executeQuery()) {
 
       while (rs.next()) {
-        names.add(rs.getString("name"));
+        data.add(rs.getString(columnName));
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Error fetching data from table: " + tableName, e);
     }
-    return names;
+    return data;
+  }
+
+  public List<String> getUserNames() {
+    return fetchData("users", "username");
+  }
+
+  public List<String> getAsiakasNames() {
+    return fetchData("asiakas", "username");
+  }
+
+  public List<String> getCottagesNames() {
+    return fetchData("cottages", "name");
+  }
+
+  public List<String> getReservationIds() {
+    // Adjust this to match the actual column name of the reservations table (probably 'id')
+    return fetchData("reservations", "id"); // or replace "id" with the correct column name
+  }
+
+  public List<String> getInvoiceNumbers() {
+    // Ensure that 'reservation_id' is correct. If you are referring to the invoice number, adjust it accordingly.
+    return fetchData("invoices", "reservation_id");
+  }
+
+  public List<String> getErrorLogMessages() {
+    return fetchData("error_log", "error_message");
   }
 }

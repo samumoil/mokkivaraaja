@@ -1,16 +1,17 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDate;
+import com.github.samumoil.mokkivaraaja.Cottage;
 
 public class Reservation {
 
-        int id;
-        LocalDate startDate;
-        int nights;
-        LocalDate endDate;
-        Customer customer;
-        Cabin cabin;
-        float totalPrice;
+        private int id;
+        private LocalDate startDate;
+        private int nights;
+        private LocalDate endDate;
+        private Customer customer;
+        private Cottage cottage;
+        private float totalPrice;
 
         public Reservation() {
                 this.id = 0;
@@ -18,18 +19,22 @@ public class Reservation {
                 this.nights = 3;
                 this.endDate = startDate.plusDays(nights);
                 this.customer = new Customer();
-                this.cabin = new Cabin();
-                this.totalPrice = cabin.getPricePerNight() * nights;
+                this.cottage = new Cottage();
+                this.totalPrice = calculateTotalPrice();
         }
 
-        public Reservation(int id, LocalDate startDate, int nights, Customer customer, Cabin cabin) {
+        public Reservation(int id, LocalDate startDate, int nights, Customer customer, Cottage cottage) {
                 this.id = id;
                 this.startDate = startDate;
                 this.nights = nights;
                 this.endDate = startDate.plusDays(nights);
                 this.customer = customer;
-                this.cabin = cabin;
-                this.totalPrice = cabin.getPricePerNight() * nights;
+                this.cottage = cottage;
+                this.totalPrice = calculateTotalPrice();
+        }
+
+        private float calculateTotalPrice() {
+                return cottage.getPricePerNight() * nights;
         }
 
         public int getId() {
@@ -48,8 +53,8 @@ public class Reservation {
                 return endDate;
         }
 
-        public Cabin getCabin() {
-                return cabin;
+        public Cottage getCottage() {
+                return cottage;
         }
 
         public Customer getCustomer() {
@@ -59,5 +64,4 @@ public class Reservation {
         public float getTotalPrice() {
                 return totalPrice;
         }
-
 }
