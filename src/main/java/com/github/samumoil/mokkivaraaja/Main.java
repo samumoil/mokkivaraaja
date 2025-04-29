@@ -16,7 +16,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 public class Main extends Application {
@@ -98,7 +97,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Initialize DataSource and DB
-        dataSource = (HikariDataSource) createDataSource();
+        dataSource = createDataSource();
         db = new DB(dataSource);
 
         BorderPane root = new BorderPane();
@@ -194,7 +193,7 @@ public class Main extends Application {
         super.stop();
     }
 
-    private DataSource createDataSource() {
+    private HikariDataSource createDataSource() {
         DatabaseConfig dbConfig = new DatabaseConfig();
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dbConfig.getDbUrl());
