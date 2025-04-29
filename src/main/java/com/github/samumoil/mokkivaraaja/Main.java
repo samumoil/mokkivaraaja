@@ -21,7 +21,7 @@ import java.util.List;
 public class Main extends Application {
     private HikariDataSource dataSource;
     private StackPane viewArea;
-    private DB db;
+    private DatabaseWorker dbw;
 
     // Tässä kuusi erillistä näkymäoliota(chatgpt)
     private VBox view1 = new VBox(
@@ -98,7 +98,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         // Initialize DataSource and DB
         dataSource = createDataSource();
-        db = new DB(dataSource);
+        dbw = new DatabaseWorker(dataSource);
 
         BorderPane root = new BorderPane();
 
@@ -153,12 +153,12 @@ public class Main extends Application {
     // Method to fetch and display data for view6 (Palautukset)
     private void updateView6() {
         // Fetch data for each category from the database
-        List<String> names = db.getAsiakasNames();
-        List<String> cottages = db.getCottagesNames();
-        List<String> userNames = db.getUserNames();
-        List<String> reservationIds = db.getReservationIds();
-        List<String> invoiceNumbers = db.getInvoiceNumbers();
-        List<String> errorLogMessages = db.getErrorLogMessages();
+        List<String> names = dbw.getAsiakasNames();
+        List<String> cottages = dbw.getCottagesNames();
+        List<String> userNames = dbw.getUserNames();
+        List<String> reservationIds = dbw.getReservationIds();
+        List<String> invoiceNumbers = dbw.getInvoiceNumbers();
+        List<String> errorLogMessages = dbw.getErrorLogMessages();
 
         // Add data to view6 using Labels
         ObservableList<Label> labels = FXCollections.observableArrayList(
