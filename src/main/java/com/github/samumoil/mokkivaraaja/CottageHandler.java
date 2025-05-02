@@ -1,5 +1,6 @@
 package com.github.samumoil.mokkivaraaja;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +12,8 @@ public class CottageHandler {
     private final Map<Integer, Cottage> allCottages;
     private final Map<Integer, String> cottageNames;
 
-    public CottageHandler() {
-        this.databaseWorker = new DatabaseWorker();
+    public CottageHandler(DataSource dataSource) {
+        this.databaseWorker = new DatabaseWorker(dataSource);
         this.allCottages = new HashMap<>();
         this.cottageNames = new HashMap<>();
         loadCottagesFromDatabase();
@@ -20,7 +21,7 @@ public class CottageHandler {
 
     private void loadCottagesFromDatabase() {
         allCottages.clear();
-        List<Cottage> cottages = databaseWorker.getAllCottages();
+        List<Cottage> cottages = databaseWorker.getCottages();
         if (cottages == null || cottages.isEmpty()) return;
         for (Cottage cottage : cottages) {
             allCottages.put(cottage.getId(), cottage);

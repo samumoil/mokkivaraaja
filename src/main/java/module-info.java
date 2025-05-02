@@ -4,8 +4,8 @@ module com.github.samumoil.mokkivaraaja {
     requires javafx.graphics;
     requires javafx.controls;
     requires java.naming;
-    requires javafx.controls;
+    requires org.postgresql.jdbc;
 
-  opens com.github.samumoil.mokkivaraaja;
-  exports com.github.samumoil.mokkivaraaja;
+    opens com.github.samumoil.mokkivaraaja;
+    exports com.github.samumoil.mokkivaraaja;
 }
