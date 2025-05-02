@@ -1,5 +1,6 @@
 package com.github.samumoil.mokkivaraaja;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.sql.DataSource;
 import java.sql.*;
@@ -40,6 +41,12 @@ public class DatabaseWorker {
         }
     }
 
+    // TODO: implement method
+    protected Cottage getCottageById(int id) {
+        System.out.println("Fetching cottage with id: " + id);
+        return new Cottage();
+    }
+
     /**
      * Retrieves a list of Cottage objects from the database.
      *
@@ -67,6 +74,12 @@ public class DatabaseWorker {
         });
     }
 
+    // TODO: implement method
+    protected Reservation getReservationById(int id) {
+        System.out.println("Fetching reservation with id: " + id);
+        return new Reservation();
+    }
+
     /**
      * Retrieves a list of Reservation objects from the database.
      *
@@ -90,6 +103,18 @@ public class DatabaseWorker {
             }
             return reservations;
         });
+    }
+
+    // TODO: implement method
+    protected List<Reservation> getReservationsInDateRange(LocalDate startDate, LocalDate endDate) {
+        System.out.println("Fetching reservations in date range: " + startDate + " - " + endDate);
+        return new ArrayList<>();
+    }
+
+    // TODO: implement method
+    protected Customer getCustomerById(int id) {
+        System.out.println("Fetching customer with id: " + id);
+        return new Customer();
     }
 
     /**
