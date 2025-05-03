@@ -2,11 +2,11 @@ package com.github.samumoil.mokkivaraaja;
 
 public class Customer {
 
-    int id;
-    String name;
-    String email;
-    String phoneNumber;
-    String address;
+    private int id;
+    private String name;
+    private String email;
+    private String phoneNumber;
+    private String address;
 
     public Customer() {
         this.id = 0;

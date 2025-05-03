@@ -1,6 +1,7 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import javax.sql.DataSource;
 import java.sql.*;
@@ -92,12 +93,12 @@ public class DatabaseWorker {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
                 Reservation reservation = new Reservation();
-                // reservation.setId(rs.getInt("id"));
-                // reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                // reservation.setNights(rs.getInt("nights"));
-                // reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                // reservation.setCustomerId(rs.getInt("customer_id"));
-                // reservation.setCottageId(rs.getInt("cottage_id"));
+                reservation.setId(rs.getInt("id"));
+                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
+                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
+                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
+                reservation.setCustomerId(rs.getInt("user_id"));
+                reservation.setCottageId(rs.getInt("cottage_id"));
                 // reservation.setTotalPrice(rs.getFloat("total_price"));
                 // reservations.add(reservation);
             }
@@ -129,14 +130,40 @@ public class DatabaseWorker {
             List<Customer> customers = new ArrayList<>();
             while (rs.next()) {
                 Customer customer = new Customer();
-                // customer.setId(rs.getInt("id"));
-                // customer.setUsername(rs.getString("username"));
-                // customer.setEmail(rs.getString("email"));
-                // customer.setPhoneNumber(rs.getString("phone_number"));
-                // customer.setAddress(rs.getString("address"));
+                customer.setId(rs.getInt("id"));
+                customer.setName(rs.getString("username"));
+                customer.setEmail(rs.getString("email"));
+                customer.setPhoneNumber(rs.getString("phone_number"));
+                customer.setAddress(rs.getString("address"));
                 customers.add(customer);
             }
             return customers;
         });
+    }
+
+    /**
+     * Retrieves a list of Invoice objects from the database.
+     *
+     * @return a list of Customer objects populated with data from the database
+     */
+    protected List<Invoice> getInvoices() {
+        /*
+        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
+
+        return executeQuery(sql, rs -> {
+            List<Customer> customers = new ArrayList<>();
+            while (rs.next()) {
+                Customer customer = new Customer();
+                customer.setId(rs.getInt("id"));
+                customer.setName(rs.getString("username"));
+                customer.setEmail(rs.getString("email"));
+                customer.setPhoneNumber(rs.getString("phone_number"));
+                customer.setAddress(rs.getString("address"));
+                customers.add(customer);
+            }
+            return customers;
+        });
+         */
+        return new ArrayList<>();
     }
 }
