@@ -33,9 +33,6 @@ public class Reservation {
                 this.totalPrice = calculateTotalPrice();
         }
 
-        /**
-         * Safely calculate total price: if no cottage is found, bill 0.
-         */
         private float calculateTotalPrice() {
                 Cottage cottage = CottageHandler.getCottageHandler().getCottageById(cottageId);
                 return (cottage != null)
@@ -57,7 +54,6 @@ public class Reservation {
 
         public void setStartDate(LocalDate startDate) {
                 this.startDate = startDate;
-                // keep endDate in sync
                 this.endDate = startDate.plusDays(this.nights);
         }
 
@@ -77,7 +73,6 @@ public class Reservation {
 
         public void setEndDate(LocalDate endDate) {
                 this.endDate = endDate;
-                // recompute nights if you like:
                 this.nights = (int) ChronoUnit.DAYS.between(this.startDate, endDate);
                 this.totalPrice = calculateTotalPrice();
         }
@@ -106,27 +101,16 @@ public class Reservation {
                 this.totalPrice = totalPrice;
         }
 
-        // ——— your helper getters for the UI ———
-
-        /**
-         * Returns the cottage's “number” (ID) as a string, or "N/A" if absent.
-         */
         public String getCottageNumber() {
                 Cottage c = CottageHandler.getCottageHandler().getCottageById(cottageId);
                 return c != null ? c.getNumber() : "N/A";
         }
 
-        /**
-         * Returns the customer’s name, or "Unknown" if no such customer.
-         */
         public String getCustomerName() {
                 Customer cust = CustomerHandler.getCustomerHandler().getCustomerById(customerId);
                 return cust != null ? cust.getName() : "Unknown";
         }
 
-        /**
-         * A human‐readable duration, e.g. “3 night(s)”.
-         */
         public String getDuration() {
                 return nights + " night(s)";
         }

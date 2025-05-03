@@ -17,7 +17,6 @@ public class Main extends Application {
     private StackPane viewArea;
     private DatabaseWorker dbw;
 
-    // Labels, text fields and buttons for various views
     private Label mokintieto = new Label("Mökin tietoja");
     private Label osoite = new Label("Mökin osoite:");
     private TextField osoitekenta = new TextField();
@@ -29,17 +28,17 @@ public class Main extends Application {
     private TextField mn = new TextField();
     private Button tallennus = new Button("Tallenna");
     private Button hakuButton = new Button("Haku");
-    private Button asiakasHakuButton = new Button("Asiakas Haku");  // Create a new button for searching customers
-    private TextField AsiakasNimi   = new TextField();
-    private TextField AsiakasPuhelin   = new TextField();
-    private TextField AsiakasEmail   = new TextField();
+    private Button asiakasHakuButton = new Button("Asiakas Haku");
+    private TextField AsiakasNimi = new TextField();
+    private TextField AsiakasPuhelin = new TextField();
+    private TextField AsiakasEmail = new TextField();
     private TextField AsiakasOsoite = new TextField();
     private TextField AsiakkaanMokki = new TextField();
     private TextField varausMokkiNumero = new TextField();
     private TextField varaaja = new TextField();
     private TextField kesto = new TextField();
     private TextField alkupaiva = new TextField();
-    private TextField varausIdKentta = new TextField(); // Add this for searching by ID
+    private TextField varausIdKentta = new TextField();
     private Button varausHakuButton = new Button("Varaus Haku");
     private TextField laskuIdField = new TextField();
     private TextField laskuSaaja = new TextField();
@@ -48,10 +47,6 @@ public class Main extends Application {
     private TextField laskuMokkiNumero = new TextField();
     private Button laskuHakuButton = new Button("Hae lasku");
 
-
-
-
-    // View1: Mökit info form
     private VBox view1 = new VBox(
             mokintieto,
             osoite,
@@ -65,7 +60,6 @@ public class Main extends Application {
             tallennus
     );
 
-    // View2: Varaukset (Reservations)
     private VBox view2 = new VBox(new Label("Varaus"),
             new Label("Mökin numero:"), new TextField(),
             new Label("Varaaja:"), new TextField(),
@@ -73,7 +67,6 @@ public class Main extends Application {
             new Label("Varauksen alku päivä:"), new TextField(),
             new Button("Tallenna"));
 
-    // View3: Asiakkaat (Customer info)
     private VBox view3 = new VBox(new Label("Asiakkaan tiedot"),
             new Label("Nimi:"), new TextField(),
             new Label("Sähköposti:"), new TextField(),
@@ -81,7 +74,6 @@ public class Main extends Application {
             new Label("Mökin numero:"), new TextField(),
             new Button("Tallenna"));
 
-    // View4: Laskut (Invoices)
     private VBox view4 = new VBox(new Label("Laskun tiedot"),
             new Label("Saaja:"), new TextField(),
             new Label("Osoite:"), new TextField(),
@@ -89,18 +81,15 @@ public class Main extends Application {
             new Label("Mökin numero:"), new TextField(),
             new Button("Tallenna"));
 
-    // View5: Raportit (Reports)
     private VBox view5 = new VBox(new Label("Raportin luominen"),
             new Label("Raportti:"), new TextField(),
             new Button("Tallenna"));
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Initialize DataSource and DB
         dataSource = createDataSource();
         dbw = new DatabaseWorker(dataSource);
 
-        // Initialize handlers (Make sure handlers are correctly set up)
         CottageHandler.createCottageHandler(dbw);
         CustomerHandler.createCustomerHandler(dbw);
         ReservationHandler.createReservationHandler(dbw);
@@ -108,22 +97,18 @@ public class Main extends Application {
 
         BorderPane root = new BorderPane();
 
-        // ComboBox for selecting views
         ComboBox<String> viewChooser = new ComboBox<>();
         viewChooser.getItems().addAll("Mökit", "Varaukset", "Asiakkaat", "Laskut", "Raportit");
         viewChooser.setValue("Mökit");
 
-        // View area in center
         viewArea = new StackPane();
-        viewArea.getChildren().add(view1); // Default view
+        viewArea.getChildren().add(view1);
 
-        // Top pane with ComboBox and search field
         HBox topPane = new HBox();
         Label hakuteksti = new Label("Mökin haku");
         TextField hakukentta = new TextField();
         topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton, asiakasHakuButton, varausHakuButton, laskuHakuButton);
 
-        // Right pane with ListView
         Pane listaNakyma = new Pane();
         ListView<String> lista = new ListView<>();
         lista.setItems(CottageHandler.getCottageHandler().getCottageNames());
@@ -133,7 +118,6 @@ public class Main extends Application {
         root.setCenter(viewArea);
         root.setRight(listaNakyma);
 
-        // Switch views based on selection in ComboBox
         viewChooser.setOnAction(e -> {
             String selected = viewChooser.getValue();
             switch (selected) {
@@ -159,15 +143,14 @@ public class Main extends Application {
             }
         });
 
-        // Method to search for the cottage by ID and fill in the details
         hakuButton.setOnAction(e -> {
-            String cottageId = hakukentta.getText();  // Get the cottage ID from the search field
-            searchAndFillCottageDetails(cottageId);   // Call the search and fill method
+            String cottageId = hakukentta.getText();
+            searchAndFillCottageDetails(cottageId);
         });
 
         asiakasHakuButton.setOnAction(e -> {
-            String customerId = AsiakasNimi.getText(); // Get customer ID (or adjust the text field if needed)
-            searchAndFillCustomerDetails(customerId);  // Call the search and fill method
+            String customerId = AsiakasNimi.getText();
+            searchAndFillCustomerDetails(customerId);
         });
 
         varausHakuButton.setOnAction(e -> {
@@ -175,9 +158,6 @@ public class Main extends Application {
             searchAndFillReservationDetails(reservationId);
         });
 
-
-
-        // Create and show the scene
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setTitle("Mökki Management");
         primaryStage.setScene(scene);
@@ -192,7 +172,6 @@ public class Main extends Application {
         super.stop();
     }
 
-    // Create the database connection pool
     private HikariDataSource createDataSource() {
         DatabaseConfig dbConfig = new DatabaseConfig();
         HikariConfig config = new HikariConfig();
@@ -208,21 +187,15 @@ public class Main extends Application {
         return new HikariDataSource(config);
     }
 
-    // Method to search for the cottage by ID and fill in the details
     private void searchAndFillCottageDetails(String cottageId) {
-        // Ensure the ID is not empty before searching
         if (cottageId != null && !cottageId.isEmpty()) {
-            // Query the database for the cottage with the given ID
-            Cottage cottage = dbw.getCottageById(Integer.parseInt(cottageId)); // Assume `getCottageById` is implemented in DatabaseWorker
-
-            // If a cottage is found, fill in the details in the text fields
+            Cottage cottage = dbw.getCottageById(Integer.parseInt(cottageId));
             if (cottage != null) {
                 osoitekenta.setText(cottage.getAddress());
                 mika.setText(String.valueOf(cottage.getAge()));
                 mkoko.setText(String.valueOf(cottage.getSize()));
                 mn.setText(cottage.getNumber());
             } else {
-                // Show an error message if the cottage is not found
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
@@ -230,7 +203,6 @@ public class Main extends Application {
                 alert.showAndWait();
             }
         } else {
-            // Show an error message if the search field is empty
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText(null);
@@ -238,6 +210,7 @@ public class Main extends Application {
             alert.showAndWait();
         }
     }
+
     private void searchAndFillReservationDetails(String reservationId) {
         if (reservationId != null && !reservationId.isEmpty()) {
             try {
@@ -245,16 +218,12 @@ public class Main extends Application {
                 Reservation reservation = dbw.getReservationById(id);
 
                 if (reservation != null) {
-                    // Fill in the reservation details
                     varausMokkiNumero.setText(reservation.getCottageNumber());
                     varaaja.setText(reservation.getCustomerName());
                     kesto.setText(String.valueOf(reservation.getDuration()));
-
-                    // Format and display start date (assuming startDate is a LocalDate)
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
                     alkupaiva.setText(reservation.getStartDate().format(formatter));
                 } else {
-                    // Show an error message if the reservation is not found
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Virhe");
                     alert.setHeaderText(null);
@@ -262,7 +231,6 @@ public class Main extends Application {
                     alert.showAndWait();
                 }
             } catch (NumberFormatException e) {
-                // Show an error message if the reservation ID is invalid
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Virhe");
                 alert.setHeaderText(null);
@@ -270,7 +238,6 @@ public class Main extends Application {
                 alert.showAndWait();
             }
         } else {
-            // Show an error message if the reservation ID is empty
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Virhe");
             alert.setHeaderText(null);
@@ -279,27 +246,18 @@ public class Main extends Application {
         }
     }
 
-
-
-    /**
-     * Method to search for the customer by ID and fill in the details
-     */
     private void searchAndFillCustomerDetails(String customerId) {
-        // Ensure the ID is not empty before searching
         if (customerId != null && !customerId.isEmpty()) {
             try {
                 int id = Integer.parseInt(customerId);
-                // Query the database for the customer with the given ID
                 Customer customer = dbw.getCustomerById(id);
 
-                // If a customer is found, fill in the details in the text fields
                 if (customer != null) {
                     AsiakasNimi.setText(customer.getName());
                     AsiakasEmail.setText(customer.getEmail());
                     AsiakasPuhelin.setText(customer.getPhoneNumber());
                     AsiakasOsoite.setText(customer.getAddress());
                 } else {
-                    // Show an error message if the customer is not found
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
                     alert.setHeaderText(null);
@@ -307,7 +265,6 @@ public class Main extends Application {
                     alert.showAndWait();
                 }
             } catch (NumberFormatException e) {
-                // Handle non-numeric input
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
@@ -315,7 +272,6 @@ public class Main extends Application {
                 alert.showAndWait();
             }
         } else {
-            // Show an error message if the search field is empty
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText(null);
@@ -324,14 +280,11 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * Etsii laskun ID:n perusteella ja täyttää kentät
-     */
     private void searchAndFillLaskuDetails(String invoiceId) {
         if (invoiceId != null && !invoiceId.isEmpty()) {
             try {
                 int id = Integer.parseInt(invoiceId);
-                Invoice invoice = dbw.getInvoiceById(id); // Replace with your actual DB call
+                Invoice invoice = dbw.getInvoiceById(id);
 
                 if (invoice != null) {
                     laskuSaaja.setText(invoice.getRecipient());
@@ -349,9 +302,6 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * Näyttää virheilmoituksen
-     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Virhe");

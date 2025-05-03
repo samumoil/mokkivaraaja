@@ -191,11 +191,8 @@ public class DatabaseWorker {
                 invoice.setStatus(rs.getString("status"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 int reservationId = rs.getInt("reservation_id");
-
-                // Set reservation related data (customer, cottage)
                 Reservation reservation = getReservationById(reservationId);
                 invoice.setReservation(reservation);
-
                 return invoice;
             }
             return null;
@@ -214,11 +211,8 @@ public class DatabaseWorker {
                 invoice.setStatus(rs.getString("status"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 int reservationId = rs.getInt("reservation_id");
-
-                // Set reservation related data (customer, cottage)
                 Reservation reservation = getReservationById(reservationId);
                 invoice.setReservation(reservation);
-
                 invoices.add(invoice);
             }
             return invoices;
