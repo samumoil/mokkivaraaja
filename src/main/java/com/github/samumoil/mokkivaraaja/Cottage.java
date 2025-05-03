@@ -1,7 +1,11 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
+/**
+ * The Cottage class represents a cottage with its details such as name, description, location, capacity, etc.
+ */
 public class Cottage {
 
     private int id;
@@ -102,5 +106,46 @@ public class Cottage {
 
     public void setPricePerNight(float pricePerNight) {
         this.pricePerNight = pricePerNight;
+    }
+
+    /**
+     * Returns the address of the cottage.
+     * @return The location of the cottage.
+     */
+    public String getAddress() {
+        return location; // Assuming 'location' is the address of the cottage
+    }
+
+    /**
+     * Calculates and returns the age of the cottage in years.
+     * @return The age of the cottage as a string.
+     */
+    public String getAge() {
+        long years = ChronoUnit.YEARS.between(createdAt, LocalDateTime.now());
+        return String.valueOf(years);
+    }
+
+    /**
+     * Returns the size of the cottage, which is represented by the capacity.
+     * @return The capacity of the cottage as a string.
+     */
+    public String getSize() {
+        return String.valueOf(capacity); // Assuming capacity reflects the size
+    }
+
+    /**
+     * Returns the number (ID) of the cottage.
+     * @return The ID of the cottage as a string.
+     */
+    public String getNumber() {
+        return String.valueOf(id); // ID as the number of the cottage
+    }
+
+    /**
+     * Returns the cottage number, which is the ID of the cottage.
+     * @return The ID of the cottage as a string.
+     */
+    public String getCottageNumber() {
+        return String.valueOf(id); // ID as the cottage number
     }
 }

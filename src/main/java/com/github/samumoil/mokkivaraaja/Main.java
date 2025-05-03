@@ -10,25 +10,25 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
-import java.util.List;
-
 public class Main extends Application {
     private HikariDataSource dataSource;
     private StackPane viewArea;
     private DatabaseWorker dbw;
 
-    // Tässä viisi erillistä näkymäoliota(chatgpt)
-    //olioita näkyviin
-    Label mokintieto=new Label("Mökin tietoja");
-    Label osoite=new Label ("Mökin osoite:");
-    TextField osoitekenta=new TextField();
-    Label mokiika= new Label("Mökin ikä:");
-    TextField mika=new TextField();
-    Label koko=new Label ("mökin koko:");
-    TextField mkoko=new TextField();
-    Label mokinumero=new Label("mökin numero:");
-    TextField mn=new TextField();
-    Button tallennus=new Button("tallenna");
+    // Labels, text fields and buttons for various views
+    private Label mokintieto = new Label("Mökin tietoja");
+    private Label osoite = new Label("Mökin osoite:");
+    private TextField osoitekenta = new TextField();
+    private Label mokiika = new Label("Mökin ikä:");
+    private TextField mika = new TextField();
+    private Label koko = new Label("Mökin koko:");
+    private TextField mkoko = new TextField();
+    private Label mokinumero = new Label("Mökin numero:");
+    private TextField mn = new TextField();
+    private Button tallennus = new Button("Tallenna");
+    private Button hakuButton = new Button("Haku");
+
+    // View1: Mökit info form
     private VBox view1 = new VBox(
             mokintieto,
             osoite,
@@ -40,78 +40,36 @@ public class Main extends Application {
             mokinumero,
             mn,
             tallennus
-
-
     );
-    TextField varaaja1=new TextField();
-    TextField kesto=new TextField();
-    TextField alku=new TextField();
-    Label mokinumero1=new Label("mökin numero:");
-    TextField mn1=new TextField();
-    Button tallennus1=new Button("tallenna");
+
+    // View2: Varaukset (Reservations)
     private VBox view2 = new VBox(new Label("Varaus"),
-            mokinumero1,
-            mn1,
-            new Label("Varaaja:"),
-            varaaja1,
-            new Label ("varauksen kesto:"),
-            kesto,
-            new Label("varauksen alku päivä:"),
-            alku,
-            tallennus1);
+            new Label("Mökin numero:"), new TextField(),
+            new Label("Varaaja:"), new TextField(),
+            new Label("Varauksen kesto:"), new TextField(),
+            new Label("Varauksen alku päivä:"), new TextField(),
+            new Button("Tallenna"));
 
-    Button tallennus2=new Button("tallenna");
-    TextField mokinumero2=new TextField();
-    TextField pn=new TextField();
-    TextField o =new TextField();
-    TextField sahkoposti=new TextField();
-    TextField nimi=new TextField();
+    // View3: Asiakkaat (Customer info)
     private VBox view3 = new VBox(new Label("Asiakkaan tiedot"),
-            new Label ("Nimi:"),
-            nimi,
-            new Label("Sähköposti:"),
-            sahkoposti,
-            new Label ("Osoite:"),
-            o,
-            pn,
-            new TextField(),
-            new Label("mökin numero:"),
-            mokinumero2,
-            tallennus2);
-    TextField saaja=new TextField();
-    TextField osote=new TextField();
-    TextField sum=new TextField();
-    TextField mokinumero3=new TextField();
-    Button tallennus3=new Button("tallenna");
-    private VBox view4 = new VBox(new Label("Laskun tiedot"),
-            new Label ("saaja:"),
-            saaja,
-            new Label("osoite:"),
-            osote,
-            new Label ("summa:"),
-            sum,
-            new Label("mökin numero:"),
-            mokinumero3,
-            tallennus3);
-    TextField ra= new TextField();
-    Button tallennus4=new Button("tallenna");
-    private VBox view5 = new VBox(new Label("Raportin luominen"),
-            new Label("raportti:"),
-            ra,
-            tallennus4);
+            new Label("Nimi:"), new TextField(),
+            new Label("Sähköposti:"), new TextField(),
+            new Label("Osoite:"), new TextField(),
+            new Label("Mökin numero:"), new TextField(),
+            new Button("Tallenna"));
 
-    // Extra view for returns (New View - view6)
-    private VBox view6 = new VBox(new Label("Palautukset"),
-            new Label("Palautuksen ID:"),
-            new TextField(),
-            new Label("Asiakkaan nimi:"),
-            new TextField(),
-            new Label("Palautus päivä:"),
-            new TextField(),
-            new Label("Mökin numero:"),
-            new TextField(),
-            new Button("Tallenna")
-    );
+    // View4: Laskut (Invoices)
+    private VBox view4 = new VBox(new Label("Laskun tiedot"),
+            new Label("Saaja:"), new TextField(),
+            new Label("Osoite:"), new TextField(),
+            new Label("Summa:"), new TextField(),
+            new Label("Mökin numero:"), new TextField(),
+            new Button("Tallenna"));
+
+    // View5: Raportit (Reports)
+    private VBox view5 = new VBox(new Label("Raportin luominen"),
+            new Label("Raportti:"), new TextField(),
+            new Button("Tallenna"));
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -119,7 +77,7 @@ public class Main extends Application {
         dataSource = createDataSource();
         dbw = new DatabaseWorker(dataSource);
 
-        // Initialize handlers
+        // Initialize handlers (Make sure handlers are correctly set up)
         CottageHandler.createCottageHandler(dbw);
         CustomerHandler.createCustomerHandler(dbw);
         ReservationHandler.createReservationHandler(dbw);
@@ -127,23 +85,24 @@ public class Main extends Application {
 
         BorderPane root = new BorderPane();
 
+        // ComboBox for selecting views
         ComboBox<String> viewChooser = new ComboBox<>();
         viewChooser.getItems().addAll("Mökit", "Varaukset", "Asiakkaat", "Laskut", "Raportit");
         viewChooser.setValue("Mökit");
 
-        // Keskialue näkymiä varten(chat gpt)
+        // View area in center
         viewArea = new StackPane();
-        viewArea.getChildren().add(view1); // Alkuun näkymä 1 (chat gpt)
+        viewArea.getChildren().add(view1); // Default view
 
-        // ComboBox vasempaan yläkulmaan(chat gpt)
-        // ja hakukenttä
+        // Top pane with ComboBox and search field
         HBox topPane = new HBox();
         Label hakuteksti = new Label("Mökin haku");
         TextField hakukentta = new TextField();
-        topPane.getChildren().addAll(viewChooser,hakuteksti,hakukentta);
+        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton);
 
+        // Right pane with ListView
         Pane listaNakyma = new Pane();
-        ListView lista = new ListView<>();
+        ListView<String> lista = new ListView<>();
         lista.setItems(CottageHandler.getCottageHandler().getCottageNames());
         listaNakyma.getChildren().add(lista);
 
@@ -151,9 +110,7 @@ public class Main extends Application {
         root.setCenter(viewArea);
         root.setRight(listaNakyma);
 
-
-
-        // Vaihda näkyvää näkymää valinnan mukaan (chat gpt)
+        // Switch views based on selection in ComboBox
         viewChooser.setOnAction(e -> {
             String selected = viewChooser.getValue();
             switch (selected) {
@@ -176,63 +133,22 @@ public class Main extends Application {
                 case "Raportit":
                     viewArea.getChildren().setAll(view5);
                     break;
-                case "Palautukset":
-                    viewArea.getChildren().setAll(view6);  // Show return information view
- //                   updateView6();  // Fetch and display data for returns view
-                    break;
             }
         });
 
-        Scene scene = new Scene(root, 500, 500);
-        primaryStage.setTitle("Mökki");
+        // Method to search for the cottage by ID and fill in the details
+        hakuButton.setOnAction(e -> {
+            String cottageId = hakukentta.getText();  // Get the cottage ID from the search field
+            searchAndFillCottageDetails(cottageId);   // Call the search and fill method
+        });
+
+        // Create and show the scene
+        Scene scene = new Scene(root, 800, 600);
+        primaryStage.setTitle("Mökki Management");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-
-
-
-
-    /*
-    // Method to fetch and display data for view6 (Palautukset)
-    private void updateView6() {
-        // Fetch data for each category from the database
-        List<String> names = dbw.getAsiakasNames();
-        List<String> cottages = dbw.getCottagesNames();
-        List<String> userNames = dbw.getUserNames();
-        List<String> reservationIds = dbw.getReservationIds();
-        List<String> invoiceNumbers = dbw.getInvoiceNumbers();
-        List<String> errorLogMessages = dbw.getErrorLogMessages();
-
-        // Add data to view6 using Labels
-        ObservableList<Label> labels = FXCollections.observableArrayList(
-                new Label("Asiakas Names:"));
-        names.forEach(name -> labels.add(new Label(name)));
-
-        labels.add(new Label("Cottages:"));
-        cottages.forEach(cottage -> labels.add(new Label(cottage)));
-
-        labels.add(new Label("User Names:"));
-        userNames.forEach(userName -> labels.add(new Label(userName)));
-
-        labels.add(new Label("Reservation IDs:"));
-        reservationIds.forEach(reservationId -> labels.add(new Label(reservationId)));
-
-        labels.add(new Label("Invoice Numbers:"));
-        invoiceNumbers.forEach(invoiceNumber -> labels.add(new Label(invoiceNumber)));
-
-        labels.add(new Label("Error Log Messages:"));
-        errorLogMessages.forEach(errorLogMessage -> labels.add(new Label(errorLogMessage)));
-
-        // Clear and add labels to the view6
-        view6.getChildren().clear();
-        view6.getChildren().addAll(labels);
-    }
-
-
-
-
-     */
     @Override
     public void stop() throws Exception {
         if (dataSource != null) {
@@ -241,6 +157,7 @@ public class Main extends Application {
         super.stop();
     }
 
+    // Create the database connection pool
     private HikariDataSource createDataSource() {
         DatabaseConfig dbConfig = new DatabaseConfig();
         HikariConfig config = new HikariConfig();
@@ -254,6 +171,37 @@ public class Main extends Application {
         config.setMaximumPoolSize(10);
 
         return new HikariDataSource(config);
+    }
+
+    // Method to search for the cottage by ID and fill in the details
+    private void searchAndFillCottageDetails(String cottageId) {
+        // Ensure the ID is not empty before searching
+        if (cottageId != null && !cottageId.isEmpty()) {
+            // Query the database for the cottage with the given ID
+            Cottage cottage = dbw.getCottageById(Integer.parseInt(cottageId)); // Assume `getCottageById` is implemented in DatabaseWorker
+
+            // If a cottage is found, fill in the details in the text fields
+            if (cottage != null) {
+                osoitekenta.setText(cottage.getAddress());
+                mika.setText(String.valueOf(cottage.getAge()));
+                mkoko.setText(String.valueOf(cottage.getSize()));
+                mn.setText(cottage.getNumber());
+            } else {
+                // Show an error message if the cottage is not found
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Mökkiä ei löydy ID:llä " + cottageId);
+                alert.showAndWait();
+            }
+        } else {
+            // Show an error message if the search field is empty
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Syötä mökin ID");
+            alert.showAndWait();
+        }
     }
 
     public static void main(String[] args) {

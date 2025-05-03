@@ -3,13 +3,18 @@ package com.github.samumoil.mokkivaraaja;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.List;
 
 @FunctionalInterface
 interface ResultSetHandler<T> {
     T handle(ResultSet rs) throws SQLException;
+}
+
+@FunctionalInterface
+interface PreparedStatementSetter {
+    void setParameters(PreparedStatement ps) throws SQLException;
 }
 
 public class DatabaseWorker {
@@ -22,41 +27,49 @@ public class DatabaseWorker {
         this.dataSource = dataSource;
     }
 
-    /**
-     * Executes an SQL query and processes the result set using the provided handler.
-     *
-     * @param <T>     The type of object that will be returned by the handler
-     * @param sql     The SQL query string to execute
-     * @param handler A ResultSetHandler implementation that processes the query results
-     * @return The result of type T as processed by the handler
-     * @throws RuntimeException if an SQL error occurs during query execution
-     */
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
         try (Connection dbc = dataSource.getConnection();
              PreparedStatement st = dbc.prepareStatement(sql);
              ResultSet rs = st.executeQuery()) {
             return handler.handle(rs);
         } catch (SQLException e) {
-            System.err.println("Error executing query: " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new RuntimeException("Query execution failed: " + e.getMessage(), e);
         }
     }
 
-    // TODO: implement method -> Implemented in cottagehandler
-    protected Cottage getCottageById(int id) {
-        System.out.println("Fetching cottage with id: " + id);
-        return new Cottage();
+    private <T> T executeQuery(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
+        try (Connection dbc = dataSource.getConnection();
+             PreparedStatement st = dbc.prepareStatement(sql)) {
+            setter.setParameters(st);
+            try (ResultSet rs = st.executeQuery()) {
+                return handler.handle(rs);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Query execution with parameters failed: " + e.getMessage(), e);
+        }
     }
 
-    /**
-     * Retrieves a list of Cottage objects from the database.
-     *
-     * @return a list of Cottage objects populated with data from the database
-     */
-    protected List<Cottage> getCottages() {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night " +
-                "FROM " + COTTAGES_TABLE_NAME;
+    protected Cottage getCottageById(int id) {
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Cottage cottage = new Cottage();
+                cottage.setId(rs.getInt("id"));
+                cottage.setName(rs.getString("name"));
+                cottage.setDescription(rs.getString("description"));
+                cottage.setLocation(rs.getString("location"));
+                cottage.setCapacity(rs.getInt("capacity"));
+                cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                cottage.setOwnerId(rs.getInt("owner_id"));
+                cottage.setPricePerNight(rs.getFloat("price_per_night"));
+                return cottage;
+            }
+            return null;
+        });
+    }
 
+    protected List<Cottage> getCottages() {
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Cottage> cottages = new ArrayList<>();
             while (rs.next()) {
@@ -75,20 +88,25 @@ public class DatabaseWorker {
         });
     }
 
-    // TODO: implement method
     protected Reservation getReservationById(int id) {
-        System.out.println("Fetching reservation with id: " + id);
-        return new Reservation();
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Reservation reservation = new Reservation();
+                reservation.setId(rs.getInt("id"));
+                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
+                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
+                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
+                reservation.setCustomerId(rs.getInt("user_id"));
+                reservation.setCottageId(rs.getInt("cottage_id"));
+                return reservation;
+            }
+            return null;
+        });
     }
 
-    /**
-     * Retrieves a list of Reservation objects from the database.
-     *
-     * @return a list of Reservation objects populated with data from the database
-     */
     protected List<Reservation> getReservations() {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME;
-
         return executeQuery(sql, rs -> {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
@@ -99,33 +117,52 @@ public class DatabaseWorker {
                 reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
                 reservation.setCustomerId(rs.getInt("user_id"));
                 reservation.setCottageId(rs.getInt("cottage_id"));
-                // reservation.setTotalPrice(rs.getFloat("total_price"));
-                // reservations.add(reservation);
+                reservations.add(reservation);
             }
             return reservations;
         });
     }
 
-    // TODO: implement method
     protected List<Reservation> getReservationsInDateRange(LocalDate startDate, LocalDate endDate) {
-        System.out.println("Fetching reservations in date range: " + startDate + " - " + endDate);
-        return new ArrayList<>();
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME +
+                " WHERE start_date >= ? AND end_date <= ?";
+        return executeQuery(sql, ps -> {
+            ps.setDate(1, Date.valueOf(startDate));
+            ps.setDate(2, Date.valueOf(endDate));
+        }, rs -> {
+            List<Reservation> reservations = new ArrayList<>();
+            while (rs.next()) {
+                Reservation reservation = new Reservation();
+                reservation.setId(rs.getInt("id"));
+                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
+                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
+                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
+                reservation.setCustomerId(rs.getInt("user_id"));
+                reservation.setCottageId(rs.getInt("cottage_id"));
+                reservations.add(reservation);
+            }
+            return reservations;
+        });
     }
 
-    // TODO: implement method
     protected Customer getCustomerById(int id) {
-        System.out.println("Fetching customer with id: " + id);
-        return new Customer();
+        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setId(rs.getInt("id"));
+                customer.setName(rs.getString("username"));
+                customer.setEmail(rs.getString("email"));
+                customer.setPhoneNumber(rs.getString("phone_number"));
+                customer.setAddress(rs.getString("address"));
+                return customer;
+            }
+            return null;
+        });
     }
 
-    /**
-     * Retrieves a list of Customer objects from the database.
-     *
-     * @return a list of Customer objects populated with data from the database
-     */
     protected List<Customer> getCustomers() {
         String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
-
         return executeQuery(sql, rs -> {
             List<Customer> customers = new ArrayList<>();
             while (rs.next()) {
@@ -141,29 +178,7 @@ public class DatabaseWorker {
         });
     }
 
-    /**
-     * Retrieves a list of Invoice objects from the database.
-     *
-     * @return a list of Customer objects populated with data from the database
-     */
     protected List<Invoice> getInvoices() {
-        /*
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
-
-        return executeQuery(sql, rs -> {
-            List<Customer> customers = new ArrayList<>();
-            while (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                customers.add(customer);
-            }
-            return customers;
-        });
-         */
         return new ArrayList<>();
     }
 }
