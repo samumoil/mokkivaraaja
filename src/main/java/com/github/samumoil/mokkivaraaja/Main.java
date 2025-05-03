@@ -27,6 +27,13 @@ public class Main extends Application {
     private TextField mn = new TextField();
     private Button tallennus = new Button("Tallenna");
     private Button hakuButton = new Button("Haku");
+    private Button asiakasHakuButton = new Button("Asiakas Haku");  // Create a new button for searching customers
+    private TextField AsiakasNimi   = new TextField();
+    private TextField AsiakasPuhelin   = new TextField();
+    private TextField AsiakasEmail   = new TextField();
+    private TextField AsiakasOsoite = new TextField();
+    private TextField AsiakkaanMokki = new TextField();
+
 
     // View1: Mökit info form
     private VBox view1 = new VBox(
@@ -98,7 +105,7 @@ public class Main extends Application {
         HBox topPane = new HBox();
         Label hakuteksti = new Label("Mökin haku");
         TextField hakukentta = new TextField();
-        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton);
+        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton, asiakasHakuButton);
 
         // Right pane with ListView
         Pane listaNakyma = new Pane();
@@ -141,6 +148,12 @@ public class Main extends Application {
             String cottageId = hakukentta.getText();  // Get the cottage ID from the search field
             searchAndFillCottageDetails(cottageId);   // Call the search and fill method
         });
+
+        asiakasHakuButton.setOnAction(e -> {
+            String customerId = AsiakasNimi.getText(); // Get customer ID (or adjust the text field if needed)
+            searchAndFillCustomerDetails(customerId);  // Call the search and fill method
+        });
+
 
         // Create and show the scene
         Scene scene = new Scene(root, 800, 600);
@@ -203,6 +216,50 @@ public class Main extends Application {
             alert.showAndWait();
         }
     }
+
+    /**
+     * Method to search for the customer by ID and fill in the details
+     */
+    private void searchAndFillCustomerDetails(String customerId) {
+        // Ensure the ID is not empty before searching
+        if (customerId != null && !customerId.isEmpty()) {
+            try {
+                int id = Integer.parseInt(customerId);
+                // Query the database for the customer with the given ID
+                Customer customer = dbw.getCustomerById(id);
+
+                // If a customer is found, fill in the details in the text fields
+                if (customer != null) {
+                    AsiakasNimi.setText(customer.getName());
+                    AsiakasEmail.setText(customer.getEmail());
+                    AsiakasPuhelin.setText(customer.getPhoneNumber());
+                    AsiakasOsoite.setText(customer.getAddress());
+                } else {
+                    // Show an error message if the customer is not found
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Asiakasta ei löydy ID:llä " + id);
+                    alert.showAndWait();
+                }
+            } catch (NumberFormatException e) {
+                // Handle non-numeric input
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Virheellinen asiakas-ID: " + customerId);
+                alert.showAndWait();
+            }
+        } else {
+            // Show an error message if the search field is empty
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Syötä asiakas-ID");
+            alert.showAndWait();
+        }
+    }
+
 
     public static void main(String[] args) {
         launch(args);
