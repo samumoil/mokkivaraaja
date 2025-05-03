@@ -27,8 +27,7 @@ public class Invoice {
                 LocalDate dueDate,
                 String status,
                 LocalDateTime createdAt,
-                Reservation reservation)
-                {
+                Reservation reservation) {
                 this.id = id;
                 this.price = price;
                 this.dueDate = dueDate;
@@ -40,11 +39,15 @@ public class Invoice {
         public int getId() {
                 return id;
         }
-        public void setId(int id) { this.id = id; }
+
+        public void setId(int id) {
+                this.id = id;
+        }
 
         public double getPrice() {
                 return price;
         }
+
         public void setPrice(float price) {
                 this.price = price;
         }
@@ -52,6 +55,7 @@ public class Invoice {
         public LocalDate getDueDate() {
                 return dueDate;
         }
+
         public void setDueDate(LocalDate dueDate) {
                 this.dueDate = dueDate;
         }
@@ -59,6 +63,7 @@ public class Invoice {
         public String getStatus() {
                 return status;
         }
+
         public void setStatus(String status) {
                 this.status = status;
         }
@@ -66,6 +71,7 @@ public class Invoice {
         public LocalDateTime getCreatedAt() {
                 return createdAt;
         }
+
         public void setCreatedAt(LocalDateTime createdAt) {
                 this.createdAt = createdAt;
         }
@@ -73,6 +79,7 @@ public class Invoice {
         public Reservation getReservation() {
                 return ReservationHandler.getReservationHandler().getReservationById(reservationId);
         }
+
         public void setReservation(Reservation reservation) {
                 this.reservationId = reservation.getId();
         }
@@ -89,4 +96,50 @@ public class Invoice {
                 return cottage;
         }
 
+        public String getRecipient() {
+                Customer customer = getCustomer();
+                if (customer != null) {
+                        return customer.getFirstName() + " " + customer.getLastName();
+                } else {
+                        return "Tuntematon asiakas";
+                }
+        }
+
+        public String getAddress() {
+                Customer customer = getCustomer();
+                if (customer != null) {
+                        return customer.getAddress(); // Adjust if address includes postal code/city
+                } else {
+                        return "Ei osoitetta";
+                }
+        }
+
+        public String getAmount() {
+                return String.format("%.2f €", this.price);
+        }
+
+        public String getCottageNumber() {
+                Cottage cottage = getCottage();
+                if (cottage != null) {
+                        return String.valueOf(cottage.getId()); // Or use cottage.getName() if available
+                } else {
+                        return "Tuntematon mökki";
+                }
+        }
+
+        public void setReservationId(int reservationId) {
+                this.reservationId = reservationId;
+        }
+
+        public void setIssuedAt(LocalDateTime issuedAt) {
+                this.createdAt = issuedAt;
+        }
+
+        public void setTotalAmount(float totalAmount) {
+                this.price = totalAmount;
+        }
+
+        public void setPaid(boolean paid) {
+                this.status = paid ? "paid" : "pending";
+        }
 }

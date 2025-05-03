@@ -64,4 +64,18 @@ public class Customer {
         this.address = address;
     }
 
+    public String getFirstName() {
+        if (name != null && name.contains(" ")) {
+            return name.split(" ")[0]; // Get first part before space
+        }
+        return name; // Fallback if only one name is present
+    }
+
+    public String getLastName() {
+        if (name != null && name.contains(" ")) {
+            String[] parts = name.split(" ");
+            return parts[parts.length - 1]; // Get last part
+        }
+        return ""; // Fallback if no last name
+    }
 }

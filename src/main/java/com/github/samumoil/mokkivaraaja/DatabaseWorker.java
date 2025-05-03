@@ -22,6 +22,8 @@ public class DatabaseWorker {
     private static final String COTTAGES_TABLE_NAME = "cottages";
     private static final String RESERVATIONS_TABLE_NAME = "reservations";
     private static final String CUSTOMERS_TABLE_NAME = "asiakas";
+    private static final String INVOICES_TABLE_NAME = "invoices";
+    private static final String REPORTS_TABLE_NAME = "reports";
 
     public DatabaseWorker(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -179,6 +181,50 @@ public class DatabaseWorker {
     }
 
     protected List<Invoice> getInvoices() {
-        return new ArrayList<>();
+        String sql = "SELECT id, reservation_id, issued_at, total_amount, paid FROM " + INVOICES_TABLE_NAME;
+        return executeQuery(sql, rs -> {
+            List<Invoice> invoices = new ArrayList<>();
+            while (rs.next()) {
+                Invoice invoice = new Invoice();
+                invoice.setId(rs.getInt("id"));
+                invoice.setReservationId(rs.getInt("reservation_id"));
+                invoice.setIssuedAt(rs.getTimestamp("issued_at").toLocalDateTime());
+                invoice.setTotalAmount(rs.getFloat("total_amount"));
+                invoice.setPaid(rs.getBoolean("paid"));
+                invoices.add(invoice);
+            }
+            return invoices;
+        });
+    }
+
+    public Invoice getInvoiceById(int id) {
+        String sql = "SELECT id, reservation_id, issued_at, total_amount, paid FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Invoice invoice = new Invoice();
+                invoice.setId(rs.getInt("id"));
+                invoice.setReservationId(rs.getInt("reservation_id"));
+                invoice.setIssuedAt(rs.getTimestamp("issued_at").toLocalDateTime());
+                invoice.setTotalAmount(rs.getFloat("total_amount"));
+                invoice.setPaid(rs.getBoolean("paid"));
+                return invoice;
+            }
+            return null;
+        });
+    }
+
+    public Report getReportById(int id) {
+        String sql = "SELECT id, report_name, generated_at, content FROM " + REPORTS_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Report report = new Report();
+                report.setId(rs.getInt("id"));
+                report.setReportName(rs.getString("report_name"));
+                report.setGeneratedAt(rs.getTimestamp("generated_at").toLocalDateTime());
+                report.setContent(rs.getString("content"));
+                return report;
+            }
+            return null;
+        });
     }
 }

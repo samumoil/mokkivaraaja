@@ -10,6 +10,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.time.format.DateTimeFormatter;
+
 public class Main extends Application {
     private HikariDataSource dataSource;
     private StackPane viewArea;
@@ -33,6 +35,20 @@ public class Main extends Application {
     private TextField AsiakasEmail   = new TextField();
     private TextField AsiakasOsoite = new TextField();
     private TextField AsiakkaanMokki = new TextField();
+    private TextField varausMokkiNumero = new TextField();
+    private TextField varaaja = new TextField();
+    private TextField kesto = new TextField();
+    private TextField alkupaiva = new TextField();
+    private TextField varausIdKentta = new TextField(); // Add this for searching by ID
+    private Button varausHakuButton = new Button("Varaus Haku");
+    private TextField laskuIdField = new TextField();
+    private TextField laskuSaaja = new TextField();
+    private TextField laskuOsoite = new TextField();
+    private TextField laskuSumma = new TextField();
+    private TextField laskuMokkiNumero = new TextField();
+    private Button laskuHakuButton = new Button("Hae lasku");
+
+
 
 
     // View1: Mökit info form
@@ -105,7 +121,7 @@ public class Main extends Application {
         HBox topPane = new HBox();
         Label hakuteksti = new Label("Mökin haku");
         TextField hakukentta = new TextField();
-        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton, asiakasHakuButton);
+        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton, asiakasHakuButton, varausHakuButton, laskuHakuButton);
 
         // Right pane with ListView
         Pane listaNakyma = new Pane();
@@ -153,6 +169,12 @@ public class Main extends Application {
             String customerId = AsiakasNimi.getText(); // Get customer ID (or adjust the text field if needed)
             searchAndFillCustomerDetails(customerId);  // Call the search and fill method
         });
+
+        varausHakuButton.setOnAction(e -> {
+            String reservationId = varausIdKentta.getText();
+            searchAndFillReservationDetails(reservationId);
+        });
+
 
 
         // Create and show the scene
@@ -216,6 +238,48 @@ public class Main extends Application {
             alert.showAndWait();
         }
     }
+    private void searchAndFillReservationDetails(String reservationId) {
+        if (reservationId != null && !reservationId.isEmpty()) {
+            try {
+                int id = Integer.parseInt(reservationId);
+                Reservation reservation = dbw.getReservationById(id);
+
+                if (reservation != null) {
+                    // Fill in the reservation details
+                    varausMokkiNumero.setText(reservation.getCottageNumber());
+                    varaaja.setText(reservation.getCustomerName());
+                    kesto.setText(String.valueOf(reservation.getDuration()));
+
+                    // Format and display start date (assuming startDate is a LocalDate)
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                    alkupaiva.setText(reservation.getStartDate().format(formatter));
+                } else {
+                    // Show an error message if the reservation is not found
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Virhe");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Varausta ei löytynyt varaus-ID:llä " + reservationId);
+                    alert.showAndWait();
+                }
+            } catch (NumberFormatException e) {
+                // Show an error message if the reservation ID is invalid
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Virhe");
+                alert.setHeaderText(null);
+                alert.setContentText("Virheellinen varaus-ID: " + reservationId + ". ID:n tulee olla numero.");
+                alert.showAndWait();
+            }
+        } else {
+            // Show an error message if the reservation ID is empty
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Virhe");
+            alert.setHeaderText(null);
+            alert.setContentText("Syötä varaus-ID");
+            alert.showAndWait();
+        }
+    }
+
+
 
     /**
      * Method to search for the customer by ID and fill in the details
@@ -259,6 +323,88 @@ public class Main extends Application {
             alert.showAndWait();
         }
     }
+
+    /**
+     * Etsii laskun ID:n perusteella ja täyttää kentät
+     */
+    private void searchAndFillLaskuDetails(String invoiceId) {
+        if (invoiceId != null && !invoiceId.isEmpty()) {
+            try {
+                int id = Integer.parseInt(invoiceId);
+                Invoice invoice = dbw.getInvoiceById(id); // Replace with your actual DB call
+
+                if (invoice != null) {
+                    laskuSaaja.setText(invoice.getRecipient());
+                    laskuOsoite.setText(invoice.getAddress());
+                    laskuSumma.setText(String.valueOf(invoice.getAmount()));
+                    laskuMokkiNumero.setText(invoice.getCottageNumber());
+                } else {
+                    showError("Laskua ei löytynyt ID:llä " + invoiceId);
+                }
+            } catch (NumberFormatException e) {
+                showError("Virheellinen laskun ID: " + invoiceId + ". ID:n tulee olla numero.");
+            }
+        } else {
+            showError("Syötä laskun ID");
+        }
+    }
+
+    /*
+    private void searchAndFillReport(String reportId) {
+        // Check if the report ID is valid (non-empty and numeric)
+        if (reportId != null && !reportId.isEmpty()) {
+            try {
+                // Parse the report ID to an integer
+                int id = Integer.parseInt(reportId);
+
+                // Fetch the report from the database using the ID
+                Report report = dbw.getReportById(id); // Assuming `getReportById` is a method in DatabaseWorker
+
+                if (report != null) {
+                    // Fill in the report details in the UI fields
+                    reportTitle.setText(report.getTitle());
+                    reportDescription.setText(report.getDescription());
+                    reportDate.setText(report.getDate().toString());  // Assuming the report has a Date object
+                    reportStatus.setText(report.getStatus());
+                } else {
+                    // Show an error if the report with the given ID is not found
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Virhe");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Raporttia ei löytynyt ID:llä " + reportId);
+                    alert.showAndWait();
+                }
+            } catch (NumberFormatException e) {
+                // Show an error message if the report ID is not a valid number
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Virhe");
+                alert.setHeaderText(null);
+                alert.setContentText("Virheellinen raportti-ID: " + reportId + ". ID:n tulee olla numero.");
+                alert.showAndWait();
+            }
+        } else {
+            // Show an error message if the report ID is empty
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Virhe");
+            alert.setHeaderText(null);
+            alert.setContentText("Syötä raportti-ID");
+            alert.showAndWait();
+        }
+    }
+
+     */
+
+    /**
+     * Näyttää virheilmoituksen
+     */
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Virhe");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
 
     public static void main(String[] args) {
