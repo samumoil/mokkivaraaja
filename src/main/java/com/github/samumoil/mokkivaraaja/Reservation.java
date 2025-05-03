@@ -40,28 +40,35 @@ public class Reservation {
         public int getId() {
                 return id;
         }
+        public void setId(int id) { this.id = id; }
 
         public LocalDate getStartDate() {
                 return startDate;
         }
+        public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
         public int getNights() {
                 return nights;
         }
+        public void setNights(int nights) { this.nights = nights; }
 
         public LocalDate getEndDate() {
                 return endDate;
         }
+        public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 
         public Cottage getCottage() {
                 return cottage;
         }
+        public void setCottage(Cottage cottage) { this.cottage = cottage; }
 
         public Customer getCustomer() {
                 return customer;
         }
+        public void setCustomer(Customer customer) { this.customer = customer; }
 
         public float getTotalPrice() {
                 return totalPrice;
         }
+        public void setTotalPrice(float totalPrice) { this.totalPrice = totalPrice; }
 }

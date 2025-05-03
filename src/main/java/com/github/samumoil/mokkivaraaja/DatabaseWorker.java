@@ -41,7 +41,7 @@ public class DatabaseWorker {
         }
     }
 
-    // TODO: implement method
+    // TODO: implement method -> Implemented in cottagehandler
     protected Cottage getCottageById(int id) {
         System.out.println("Fetching cottage with id: " + id);
         return new Cottage();
