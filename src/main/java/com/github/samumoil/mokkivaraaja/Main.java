@@ -349,51 +349,6 @@ public class Main extends Application {
         }
     }
 
-    /*
-    private void searchAndFillReport(String reportId) {
-        // Check if the report ID is valid (non-empty and numeric)
-        if (reportId != null && !reportId.isEmpty()) {
-            try {
-                // Parse the report ID to an integer
-                int id = Integer.parseInt(reportId);
-
-                // Fetch the report from the database using the ID
-                Report report = dbw.getReportById(id); // Assuming `getReportById` is a method in DatabaseWorker
-
-                if (report != null) {
-                    // Fill in the report details in the UI fields
-                    reportTitle.setText(report.getTitle());
-                    reportDescription.setText(report.getDescription());
-                    reportDate.setText(report.getDate().toString());  // Assuming the report has a Date object
-                    reportStatus.setText(report.getStatus());
-                } else {
-                    // Show an error if the report with the given ID is not found
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Virhe");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Raporttia ei löytynyt ID:llä " + reportId);
-                    alert.showAndWait();
-                }
-            } catch (NumberFormatException e) {
-                // Show an error message if the report ID is not a valid number
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Virhe");
-                alert.setHeaderText(null);
-                alert.setContentText("Virheellinen raportti-ID: " + reportId + ". ID:n tulee olla numero.");
-                alert.showAndWait();
-            }
-        } else {
-            // Show an error message if the report ID is empty
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Virhe");
-            alert.setHeaderText(null);
-            alert.setContentText("Syötä raportti-ID");
-            alert.showAndWait();
-        }
-    }
-
-     */
-
     /**
      * Näyttää virheilmoituksen
      */
@@ -404,8 +359,6 @@ public class Main extends Application {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-
 
     public static void main(String[] args) {
         launch(args);

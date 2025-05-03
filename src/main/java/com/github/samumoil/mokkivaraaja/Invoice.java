@@ -34,6 +34,7 @@ public class Invoice {
                 this.status = status;
                 this.createdAt = createdAt;
                 this.reservationId = reservation.getId();
+
         }
 
         public int getId() {

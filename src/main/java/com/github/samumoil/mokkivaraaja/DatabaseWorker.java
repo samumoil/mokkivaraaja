@@ -180,51 +180,48 @@ public class DatabaseWorker {
         });
     }
 
-    protected List<Invoice> getInvoices() {
-        String sql = "SELECT id, reservation_id, issued_at, total_amount, paid FROM " + INVOICES_TABLE_NAME;
-        return executeQuery(sql, rs -> {
-            List<Invoice> invoices = new ArrayList<>();
-            while (rs.next()) {
-                Invoice invoice = new Invoice();
-                invoice.setId(rs.getInt("id"));
-                invoice.setReservationId(rs.getInt("reservation_id"));
-                invoice.setIssuedAt(rs.getTimestamp("issued_at").toLocalDateTime());
-                invoice.setTotalAmount(rs.getFloat("total_amount"));
-                invoice.setPaid(rs.getBoolean("paid"));
-                invoices.add(invoice);
-            }
-            return invoices;
-        });
-    }
-
     public Invoice getInvoiceById(int id) {
-        String sql = "SELECT id, reservation_id, issued_at, total_amount, paid FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Invoice invoice = new Invoice();
                 invoice.setId(rs.getInt("id"));
-                invoice.setReservationId(rs.getInt("reservation_id"));
-                invoice.setIssuedAt(rs.getTimestamp("issued_at").toLocalDateTime());
-                invoice.setTotalAmount(rs.getFloat("total_amount"));
-                invoice.setPaid(rs.getBoolean("paid"));
+                invoice.setPrice(rs.getFloat("price"));
+                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
+                invoice.setStatus(rs.getString("status"));
+                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                int reservationId = rs.getInt("reservation_id");
+
+                // Set reservation related data (customer, cottage)
+                Reservation reservation = getReservationById(reservationId);
+                invoice.setReservation(reservation);
+
                 return invoice;
             }
             return null;
         });
     }
 
-    public Report getReportById(int id) {
-        String sql = "SELECT id, report_name, generated_at, content FROM " + REPORTS_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
-            if (rs.next()) {
-                Report report = new Report();
-                report.setId(rs.getInt("id"));
-                report.setReportName(rs.getString("report_name"));
-                report.setGeneratedAt(rs.getTimestamp("generated_at").toLocalDateTime());
-                report.setContent(rs.getString("content"));
-                return report;
+    public List<Invoice> getInvoices() {
+        String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
+        return executeQuery(sql, rs -> {
+            List<Invoice> invoices = new ArrayList<>();
+            while (rs.next()) {
+                Invoice invoice = new Invoice();
+                invoice.setId(rs.getInt("id"));
+                invoice.setPrice(rs.getFloat("price"));
+                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
+                invoice.setStatus(rs.getString("status"));
+                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                int reservationId = rs.getInt("reservation_id");
+
+                // Set reservation related data (customer, cottage)
+                Reservation reservation = getReservationById(reservationId);
+                invoice.setReservation(reservation);
+
+                invoices.add(invoice);
             }
-            return null;
+            return invoices;
         });
     }
 }
