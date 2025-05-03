@@ -1,49 +1,49 @@
 package com.github.samumoil.mokkivaraaja;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import javax.sql.DataSource;
 import java.util.List;
-import java.util.Map;
 
 public class CottageHandler {
 
-    private final DatabaseWorker databaseWorker;
-    private final Map<Integer, Cottage> allCottages;
-    private final Map<Integer, String> cottageNames;
+    private DatabaseWorker databaseWorker;
+    private List<Cottage> allCottages;
+    private ObservableList<String> cottageNames;
 
-    public CottageHandler() {
-        this.databaseWorker = new DatabaseWorker();
-        this.allCottages = new HashMap<>();
-        this.cottageNames = new HashMap<>();
+    public CottageHandler(DataSource dataSource) {
+        this.databaseWorker = new DatabaseWorker(dataSource);
+        this.cottageNames = FXCollections.observableArrayList();
         loadCottagesFromDatabase();
     }
 
     private void loadCottagesFromDatabase() {
-        allCottages.clear();
-        List<Cottage> cottages = databaseWorker.getAllCottages();
-        if (cottages == null || cottages.isEmpty()) return;
-        for (Cottage cottage : cottages) {
-            allCottages.put(cottage.getId(), cottage);
-        }
+        this.allCottages = databaseWorker.getCottages();
         updateCottageNames();
     }
 
     private void updateCottageNames() {
         cottageNames.clear();
-        for (Map.Entry<Integer, Cottage> entry : allCottages.entrySet()) {
-            cottageNames.put(entry.getKey(), entry.getValue().getName());
+        for (Cottage cottage : allCottages) {
+            cottageNames.add(cottage.getId() + " - " + cottage.getName());
         }
     }
 
     public List<Cottage> getAllCottages() {
-        return new ArrayList<>(allCottages.values());
+        return allCottages;
     }
 
-    public Map<Integer, String> getCottageNames() {
-        return new HashMap<>(cottageNames);
+    public ObservableList<String> getCottageNames() {
+        return cottageNames;
     }
 
-    public Cottage getCottage(int id) {
-        return allCottages.get(id);
+    public Cottage getCottageById(int id) {
+        for (Cottage c : allCottages) {
+            if (c.getId() == id) {
+                return c;
+            }
+        }
+        return null;
     }
 }
