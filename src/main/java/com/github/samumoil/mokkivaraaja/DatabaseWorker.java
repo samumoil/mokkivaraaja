@@ -30,6 +30,15 @@ public class DatabaseWorker {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Executes a SQL query and processes the resulting {@code ResultSet}.
+     *
+     * @param <T>     the type of the object returned after processing the {@code ResultSet}
+     * @param sql     the SQL query to be executed
+     * @param handler an implementation of {@code ResultSetHandler} to process the {@code ResultSet}
+     * @return the result of the processed {@code ResultSet}, as defined by the {@code ResultSetHandler}
+     * @throws RuntimeException if an {@code SQLException} is encountered during the execution of the query
+     */
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
         try (Connection dbc = dataSource.getConnection();
              PreparedStatement st = dbc.prepareStatement(sql);
@@ -40,6 +49,16 @@ public class DatabaseWorker {
         }
     }
 
+    /**
+     * Executes a SQL query with parameters and processes the resulting {@code ResultSet}.
+     *
+     * @param <T>     the type of the object returned after processing the {@code ResultSet}
+     * @param sql     the SQL query to be executed
+     * @param setter  an implementation of {@code PreparedStatementSetter} to set parameters in the statement
+     * @param handler an implementation of {@code ResultSetHandler} to process the {@code ResultSet}
+     * @return the result of the processed {@code ResultSet}, as defined by the {@code ResultSetHandler}
+     * @throws RuntimeException if an {@code SQLException} is encountered during the execution of the query
+     */
     private <T> T executeQueryWithParams(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
         try (Connection dbc = dataSource.getConnection();
              PreparedStatement st = dbc.prepareStatement(sql)) {
@@ -65,19 +84,27 @@ public class DatabaseWorker {
         return cottage;
     }
 
+    /**
+     * Retrieves a cottage by its unique identifier from the cottages table.
+     *
+     * @param id the unique identifier of the cottage to retrieve
+     * @return an Optional containing the Cottage if found, or an empty Optional otherwise
+     */
     protected Optional<Cottage> getCottageById(int id) {
+        //language=SQL
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         PreparedStatementSetter setter = ps -> ps.setInt(1, id);
         return executeQueryWithParams(sql, setter, rs -> {
-            if (rs.next()) {
-                return Optional.of(mapRowToCottage(rs));
-            }
+            if (rs.first()) return Optional.of(mapRowToCottage(rs));
             return Optional.empty();
         });
     }
 
     protected List<Cottage> getCottages() {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
+        //language=SQL
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM "
+                 + COTTAGES_TABLE_NAME;
+
         return executeQuery(sql, rs -> {
             List<Cottage> cottages = new ArrayList<>();
             while (rs.next()) {
@@ -98,18 +125,24 @@ public class DatabaseWorker {
         return reservation;
     }
 
+    /**
+     * Retrieves a reservation by its unique identifier from the reservations table.
+     *
+     * @param id the unique identifier of the reservation to retrieve
+     * @return an Optional containing the Reservation if found, or an empty Optional otherwise
+     */
     protected Optional<Reservation> getReservationById(int id) {
+        //language=SQL
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
         PreparedStatementSetter setter = ps -> ps.setInt(1, id);
         return executeQueryWithParams(sql, setter, rs -> {
-            if (rs.next()) {
-                return Optional.of(mapRowToReservation(rs));
-            }
+            if (rs.first()) return Optional.of(mapRowToReservation(rs));
             return Optional.empty();
         });
     }
 
     protected List<Reservation> getReservations() {
+        //language=SQL
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Reservation> reservations = new ArrayList<>();
@@ -120,13 +153,24 @@ public class DatabaseWorker {
         });
     }
 
+    /**
+     * Retrieves a list of reservations within the specified date range.
+     *
+     * @param startDate the start date of the range (inclusive)
+     * @param endDate   the end date of the range (inclusive)
+     * @return a list of reservations that overlap with the given date range
+     */
     protected List<Reservation> getReservationsInDateRange(LocalDate startDate, LocalDate endDate) {
+        //language=SQL
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME +
-                " WHERE start_date >= ? AND end_date <= ?";
-        return executeQueryWithParams(sql, ps -> {
+                 " WHERE start_date >= ? AND end_date <= ?";
+
+        PreparedStatementSetter setter = ps -> {
             ps.setDate(1, Date.valueOf(startDate));
             ps.setDate(2, Date.valueOf(endDate));
-        }, rs -> {
+        };
+
+        return executeQueryWithParams(sql, setter, rs -> {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
                 reservations.add(mapRowToReservation(rs));
@@ -135,87 +179,109 @@ public class DatabaseWorker {
         });
     }
 
-    protected Customer getCustomerById(int id) {
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
-        return executeQueryWithParams(sql, ps -> ps.setInt(1, id), rs -> {
-            if (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                return customer;
-            }
-            return null;
-        });
+    private Customer mapRowToCustomer(ResultSet rs) throws SQLException {
+        Customer customer = new Customer();
+        customer.setId(rs.getInt("id"));
+        customer.setName(rs.getString("username"));
+        customer.setEmail(rs.getString("email"));
+        customer.setPhoneNumber(rs.getString("phone_number"));
+        customer.setAddress(rs.getString("address"));
+        return customer;
     }
 
     protected List<Customer> getCustomers() {
+        //language=SQL
         String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Customer> customers = new ArrayList<>();
             while (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                customers.add(customer);
+                customers.add(mapRowToCustomer(rs));
             }
             return customers;
         });
     }
 
-    public Invoice getInvoiceById(int id) {
-        String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
-        return executeQueryWithParams(sql, ps -> ps.setInt(1, id), rs -> {
-            if (rs.next()) {
-                Invoice invoice = new Invoice();
-                invoice.setId(rs.getInt("id"));
-                invoice.setPrice(rs.getFloat("price"));
-                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
-                invoice.setStatus(rs.getString("status"));
-                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                int reservationId = rs.getInt("reservation_id");
-                return invoice;
-            }
-            return null;
+    /**
+     * Retrieves a customer by its unique identifier from the customers table.
+     *
+     * @param id the unique identifier of the customer to retrieve
+     * @return an Optional containing the Customer if found, or an empty Optional otherwise
+     */
+    protected Optional<Customer> getCustomerById(int id) {
+        //language=SQL
+        String sql = "SELECT id, username, email, phone_number, address FROM " +
+                 CUSTOMERS_TABLE_NAME +
+                 " WHERE id = ?";
+
+        PreparedStatementSetter setter = ps -> ps.setInt(1, id);
+        return executeQueryWithParams(sql, setter, rs -> {
+            if (rs.first()) return Optional.of(mapRowToCustomer(rs));
+            return Optional.empty();
         });
     }
 
-    protected Customer getCustomerByNameLike(String pattern) {
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
-        return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
-            if (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                return customer;
-            }
-            return null;
+    protected Optional<Customer> getCustomerByNameLike(String pattern) {
+        //language=SQL
+        String sql = "SELECT id, username, email, phone_number, address FROM " +
+                 CUSTOMERS_TABLE_NAME +
+                 " WHERE username LIKE ? LIMIT 1";
+
+        PreparedStatementSetter setter = ps -> ps.setString(1, pattern);
+        return executeQueryWithParams(sql, setter, rs -> {
+            if (rs.first()) return Optional.of(mapRowToCustomer(rs));
+            return Optional.empty();
         });
     }
 
-    public List<Invoice> getInvoices() {
+    private Invoice mapRowToInvoice(ResultSet rs) throws SQLException {
+        Invoice invoice = new Invoice();
+        invoice.setId(rs.getInt("id"));
+        invoice.setPrice(rs.getFloat("price"));
+        invoice.setDueDate(rs.getDate("due_date").toLocalDate());
+        invoice.setStatus(rs.getString("status"));
+        invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        return invoice;
+    }
+
+    protected List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Invoice> invoices = new ArrayList<>();
             while (rs.next()) {
-                Invoice invoice = new Invoice();
-                invoice.setId(rs.getInt("id"));
-                invoice.setPrice(rs.getFloat("price"));
-                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
-                invoice.setStatus(rs.getString("status"));
-                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                int reservationId = rs.getInt("reservation_id");
-                invoices.add(invoice);
+                invoices.add(mapRowToInvoice(rs));
             }
             return invoices;
+        });
+    }
+
+    /**
+     * Retrieves an invoice by its unique identifier from the invoices table.
+     * If the invoice is found, it is returned along with its associated reservation
+     * details. If no invoice with the specified ID exists, an empty {@code Optional} is returned.
+     *
+     * @param id the unique identifier of the invoice to fetch
+     * @return an {@code Optional} containing the found {@code Invoice} with its
+     * associated {@code Reservation}, or an empty {@code Optional} if no invoice is found
+     */
+    protected Optional<Invoice> getInvoiceById(int id) {
+        //language=SQL
+        String sql = "SELECT i.id, i.price, i.due_date, i.status, i.created_at, " +
+                 "r.id as reservation_id, r.start_date, r.end_date, r.user_id, r.cottage_id " +
+                 "FROM " + INVOICES_TABLE_NAME + " i " +
+                 "LEFT JOIN " + RESERVATIONS_TABLE_NAME +
+                 " r ON i.reservation_id = r.id " +
+                 "WHERE i.id = ?";
+
+        PreparedStatementSetter setter = ps -> ps.setInt(1, id);
+        return executeQueryWithParams(sql, setter, rs -> {
+            if (rs.first()) {
+                Invoice invoice = mapRowToInvoice(rs);
+                Reservation reservation = mapRowToReservation(rs);
+                reservation.setId(rs.getInt("reservation_id"));
+                invoice.setReservation(reservation);
+                return Optional.of(invoice);
+            }
+            return Optional.empty();
         });
     }
 }
