@@ -199,33 +199,21 @@ public class DatabaseWorker {
         });
     }
 
-    /**
-     * Finds the first customer whose username contains the given pattern (SQL LIKE).
-     * @param pattern a SQL-style pattern, e.g. "%bob%"
-     */
     protected Customer getCustomerByNameLike(String pattern) {
-        String sql = "SELECT id, username, email, phone_number, address " +
-                "FROM " + CUSTOMERS_TABLE_NAME + " " +
-                "WHERE username LIKE ? LIMIT 1";
-
-        return executeQuery(sql,
-                ps -> ps.setString(1, pattern),
-                rs -> {
-                    if (rs.next()) {
-                        Customer customer = new Customer();
-                        customer.setId(rs.getInt("id"));
-                        customer.setName(rs.getString("username"));
-                        customer.setEmail(rs.getString("email"));
-                        customer.setPhoneNumber(rs.getString("phone_number"));
-                        customer.setAddress(rs.getString("address"));
-                        return customer;
-                    }
-                    return null;
-                }
-        );
+        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
+        return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setId(rs.getInt("id"));
+                customer.setName(rs.getString("username"));
+                customer.setEmail(rs.getString("email"));
+                customer.setPhoneNumber(rs.getString("phone_number"));
+                customer.setAddress(rs.getString("address"));
+                return customer;
+            }
+            return null;
+        });
     }
-
-
 
     public List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
