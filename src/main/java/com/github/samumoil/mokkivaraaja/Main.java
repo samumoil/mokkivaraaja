@@ -10,6 +10,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class Main extends Application {
     private HikariDataSource dataSource;
@@ -22,40 +23,40 @@ public class Main extends Application {
     private ListView<String> list = new ListView<>();
 
     private TextField osoitekenta = new TextField();
-    private TextField mika        = new TextField();
-    private TextField mkoko       = new TextField();
-    private TextField mn          = new TextField();
+    private TextField mika = new TextField();
+    private TextField mkoko = new TextField();
+    private TextField mn = new TextField();
 
-    private TextField AsiakasNimi    = new TextField();
-    private TextField AsiakasEmail   = new TextField();
+    private TextField AsiakasNimi = new TextField();
+    private TextField AsiakasEmail = new TextField();
     private TextField AsiakasPuhelin = new TextField();
-    private TextField AsiakasOsoite  = new TextField();
+    private TextField AsiakasOsoite = new TextField();
     private TextField AsiakkaanMokki = new TextField();
 
-    private TextField varausIdKentta    = new TextField();
+    private TextField varausIdKentta = new TextField();
     private TextField varausMokkiNumero = new TextField();
-    private TextField varaaja           = new TextField();
-    private TextField kesto             = new TextField();
-    private TextField alkupaiva         = new TextField();
+    private TextField varaaja = new TextField();
+    private TextField kesto = new TextField();
+    private TextField alkupaiva = new TextField();
 
-    private TextField laskuIdField     = new TextField();
-    private TextField laskuSaaja       = new TextField();
-    private TextField laskuOsoite      = new TextField();
-    private TextField laskuSumma       = new TextField();
+    private TextField laskuIdField = new TextField();
+    private TextField laskuSaaja = new TextField();
+    private TextField laskuOsoite = new TextField();
+    private TextField laskuSumma = new TextField();
     private TextField laskuMokkiNumero = new TextField();
 
     private TextField raporttiKentta = new TextField();
 
-    private Button tyhjenna1=new Button("Tyhjennä");
-    private Button uusi1=new Button("luo uusi");
-    private Button tyhjenna2=new Button("Tyhjennä");
-    private Button uusi2=new Button("luo uusi");
-    private Button tyhjenna3=new Button("Tyhjennä");
-    private Button uusi3=new Button("luo uusi");
-    private Button tyhjenna4=new Button("Tyhjennä");
-    private Button uusi4=new Button("luo uusi");
-    private Button tyhjenna5=new Button("Tyhjennä");
-    private Button uusi5=new Button("luo uusi");
+    private Button tyhjenna1 = new Button("Tyhjennä");
+    private Button uusi1 = new Button("luo uusi");
+    private Button tyhjenna2 = new Button("Tyhjennä");
+    private Button uusi2 = new Button("luo uusi");
+    private Button tyhjenna3 = new Button("Tyhjennä");
+    private Button uusi3 = new Button("luo uusi");
+    private Button tyhjenna4 = new Button("Tyhjennä");
+    private Button uusi4 = new Button("luo uusi");
+    private Button tyhjenna5 = new Button("Tyhjennä");
+    private Button uusi5 = new Button("luo uusi");
 
 
     public static void main(String[] args) {
@@ -83,8 +84,8 @@ public class Main extends Application {
         hakuButton.setOnAction(e -> doUnifiedSearch());
 
         HBox topBar = new HBox(10,
-                new Label("Valitse näkymä:"), viewChooser,
-                new Label("Haku:"), hakukentta, hakuButton
+                 new Label("Valitse näkymä:"), viewChooser,
+                 new Label("Haku:"), hakukentta, hakuButton
         );
 
         list.setPrefWidth(180);
@@ -145,7 +146,8 @@ public class Main extends Application {
                 try {
                     String idOnly = raw.replaceAll("^\\s*(\\d+).*$", "$1");
                     cust = dbw.getCustomerById(Integer.parseInt(idOnly));
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
                 if (cust == null) {
                     cust = dbw.getCustomerByNameLike("%" + raw + "%");
                 }
@@ -173,59 +175,58 @@ public class Main extends Application {
 
     private VBox view1() {
         return new VBox(8,
-                new Label("Mökin osoite:"), osoitekenta,
-                new Label("Mökin ikä:"), mika,
-                new Label("Mökin koko:"), mkoko,
-                new Label("Mökin numero:"), mn,
-                new Button("Tallenna"),
-                uusi1, tyhjenna1
+                 new Label("Mökin osoite:"), osoitekenta,
+                 new Label("Mökin ikä:"), mika,
+                 new Label("Mökin koko:"), mkoko,
+                 new Label("Mökin numero:"), mn,
+                 new Button("Tallenna"),
+                 uusi1, tyhjenna1
         );
     }
 
     private VBox view2() {
         return new VBox(8,
-                new Label("Varaus-ID:"), varausIdKentta,
-                new Label("Mökin numero:"), varausMokkiNumero,
-                new Label("Varaaja:"), varaaja,
-                new Label("Kesto:"), kesto,
-                new Label("Alkupäivä:"), alkupaiva,
-                new Button("Tallenna"),
-                uusi2, tyhjenna2
+                 new Label("Varaus-ID:"), varausIdKentta,
+                 new Label("Mökin numero:"), varausMokkiNumero,
+                 new Label("Varaaja:"), varaaja,
+                 new Label("Kesto:"), kesto,
+                 new Label("Alkupäivä:"), alkupaiva,
+                 new Button("Tallenna"),
+                 uusi2, tyhjenna2
         );
     }
 
     private VBox view3() {
         return new VBox(8,
-                new Label("Nimi:"), AsiakasNimi,
-                new Label("Sähköposti:"), AsiakasEmail,
-                new Label("Puhelin:"), AsiakasPuhelin,
-                new Label("Osoite:"), AsiakasOsoite,
-                new Label("Mökin numero:"), AsiakkaanMokki,
-                new Button("Tallenna"),
-                uusi3, tyhjenna3
+                 new Label("Nimi:"), AsiakasNimi,
+                 new Label("Sähköposti:"), AsiakasEmail,
+                 new Label("Puhelin:"), AsiakasPuhelin,
+                 new Label("Osoite:"), AsiakasOsoite,
+                 new Label("Mökin numero:"), AsiakkaanMokki,
+                 new Button("Tallenna"),
+                 uusi3, tyhjenna3
         );
     }
 
     private VBox view4() {
         return new VBox(8,
-                new Label("Lasku-ID:"), laskuIdField,
-                new Label("Saaja:"), laskuSaaja,
-                new Label("Osoite:"), laskuOsoite,
-                new Label("Summa:"), laskuSumma,
-                new Label("Mökin numero:"), laskuMokkiNumero,
-                new Button("Tallenna"),
-                uusi4, tyhjenna4
+                 new Label("Lasku-ID:"), laskuIdField,
+                 new Label("Saaja:"), laskuSaaja,
+                 new Label("Osoite:"), laskuOsoite,
+                 new Label("Summa:"), laskuSumma,
+                 new Label("Mökin numero:"), laskuMokkiNumero,
+                 new Button("Tallenna"),
+                 uusi4, tyhjenna4
         );
     }
 
     private VBox view5() {
         return new VBox(8,
-                new Label("Raportti:"), raporttiKentta,
-                new Button("Tallenna"),
-                uusi5, tyhjenna5
+                 new Label("Raportti:"), raporttiKentta,
+                 new Button("Tallenna"),
+                 uusi5, tyhjenna5
         );
     }
-
 
     private void searchAndFillCottageDetails(String id) {
         try {

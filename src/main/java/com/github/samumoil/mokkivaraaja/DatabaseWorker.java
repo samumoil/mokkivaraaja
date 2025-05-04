@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.Optional;
 
 @FunctionalInterface
 interface ResultSetHandler<T> {
@@ -39,7 +40,7 @@ public class DatabaseWorker {
         }
     }
 
-    private <T> T executeQuery(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
+    private <T> T executeQueryWithParams(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
         try (Connection dbc = dataSource.getConnection();
              PreparedStatement st = dbc.prepareStatement(sql)) {
             setter.setParameters(st);
@@ -51,22 +52,27 @@ public class DatabaseWorker {
         }
     }
 
-    protected Cottage getCottageById(int id) {
+    private Cottage mapRowToCottage(ResultSet rs) throws SQLException {
+        Cottage cottage = new Cottage();
+        cottage.setId(rs.getInt("id"));
+        cottage.setName(rs.getString("name"));
+        cottage.setDescription(rs.getString("description"));
+        cottage.setLocation(rs.getString("location"));
+        cottage.setCapacity(rs.getInt("capacity"));
+        cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        cottage.setOwnerId(rs.getInt("owner_id"));
+        cottage.setPricePerNight(rs.getFloat("price_per_night"));
+        return cottage;
+    }
+
+    protected Optional<Cottage> getCottageById(int id) {
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+        PreparedStatementSetter setter = ps -> ps.setInt(1, id);
+        return executeQueryWithParams(sql, setter, rs -> {
             if (rs.next()) {
-                Cottage cottage = new Cottage();
-                cottage.setId(rs.getInt("id"));
-                cottage.setName(rs.getString("name"));
-                cottage.setDescription(rs.getString("description"));
-                cottage.setLocation(rs.getString("location"));
-                cottage.setCapacity(rs.getInt("capacity"));
-                cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                cottage.setOwnerId(rs.getInt("owner_id"));
-                cottage.setPricePerNight(rs.getFloat("price_per_night"));
-                return cottage;
+                return Optional.of(mapRowToCottage(rs));
             }
-            return null;
+            return Optional.empty();
         });
     }
 
@@ -75,35 +81,31 @@ public class DatabaseWorker {
         return executeQuery(sql, rs -> {
             List<Cottage> cottages = new ArrayList<>();
             while (rs.next()) {
-                Cottage cottage = new Cottage();
-                cottage.setId(rs.getInt("id"));
-                cottage.setName(rs.getString("name"));
-                cottage.setDescription(rs.getString("description"));
-                cottage.setLocation(rs.getString("location"));
-                cottage.setCapacity(rs.getInt("capacity"));
-                cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                cottage.setOwnerId(rs.getInt("owner_id"));
-                cottage.setPricePerNight(rs.getFloat("price_per_night"));
-                cottages.add(cottage);
+                cottages.add(mapRowToCottage(rs));
             }
             return cottages;
         });
     }
 
-    protected Reservation getReservationById(int id) {
+    private Reservation mapRowToReservation(ResultSet rs) throws SQLException {
+        Reservation reservation = new Reservation();
+        reservation.setId(rs.getInt("id"));
+        reservation.setStartDate(rs.getDate("start_date").toLocalDate());
+        reservation.setEndDate(rs.getDate("end_date").toLocalDate());
+        reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
+        reservation.setCustomerId(rs.getInt("user_id"));
+        reservation.setCottageId(rs.getInt("cottage_id"));
+        return reservation;
+    }
+
+    protected Optional<Reservation> getReservationById(int id) {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+        PreparedStatementSetter setter = ps -> ps.setInt(1, id);
+        return executeQueryWithParams(sql, setter, rs -> {
             if (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                return reservation;
+                return Optional.of(mapRowToReservation(rs));
             }
-            return null;
+            return Optional.empty();
         });
     }
 
@@ -112,14 +114,7 @@ public class DatabaseWorker {
         return executeQuery(sql, rs -> {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                reservations.add(reservation);
+                reservations.add(mapRowToReservation(rs));
             }
             return reservations;
         });
@@ -128,20 +123,13 @@ public class DatabaseWorker {
     protected List<Reservation> getReservationsInDateRange(LocalDate startDate, LocalDate endDate) {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME +
                 " WHERE start_date >= ? AND end_date <= ?";
-        return executeQuery(sql, ps -> {
+        return executeQueryWithParams(sql, ps -> {
             ps.setDate(1, Date.valueOf(startDate));
             ps.setDate(2, Date.valueOf(endDate));
         }, rs -> {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                reservations.add(reservation);
+                reservations.add(mapRowToReservation(rs));
             }
             return reservations;
         });
@@ -149,7 +137,7 @@ public class DatabaseWorker {
 
     protected Customer getCustomerById(int id) {
         String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+        return executeQueryWithParams(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Customer customer = new Customer();
                 customer.setId(rs.getInt("id"));
@@ -182,7 +170,7 @@ public class DatabaseWorker {
 
     public Invoice getInvoiceById(int id) {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+        return executeQueryWithParams(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Invoice invoice = new Invoice();
                 invoice.setId(rs.getInt("id"));
@@ -191,8 +179,6 @@ public class DatabaseWorker {
                 invoice.setStatus(rs.getString("status"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 int reservationId = rs.getInt("reservation_id");
-                Reservation reservation = getReservationById(reservationId);
-                invoice.setReservation(reservation);
                 return invoice;
             }
             return null;
@@ -227,8 +213,6 @@ public class DatabaseWorker {
                 invoice.setStatus(rs.getString("status"));
                 invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 int reservationId = rs.getInt("reservation_id");
-                Reservation reservation = getReservationById(reservationId);
-                invoice.setReservation(reservation);
                 invoices.add(invoice);
             }
             return invoices;
