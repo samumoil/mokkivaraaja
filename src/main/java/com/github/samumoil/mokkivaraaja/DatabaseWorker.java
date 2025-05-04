@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
+import com.github.samumoil.mokkivaraaja.ReportData;  // adjust if package differs
+
 
 @FunctionalInterface
 interface ResultSetHandler<T> {
@@ -214,6 +216,21 @@ public class DatabaseWorker {
             return null;
         });
     }
+
+    public ReportData getReportData() {
+        String countCottagesSql = "SELECT COUNT(*) AS count FROM " + COTTAGES_TABLE_NAME;
+        String countCustomersSql = "SELECT COUNT(*) AS count FROM " + CUSTOMERS_TABLE_NAME;
+        String countReservationsSql = "SELECT COUNT(*) AS count FROM " + RESERVATIONS_TABLE_NAME;
+        String sumInvoicesSql = "SELECT SUM(price) AS total FROM " + INVOICES_TABLE_NAME;
+
+        int cottageCount = executeQuery(countCottagesSql, rs -> rs.next() ? rs.getInt("count") : 0);
+        int customerCount = executeQuery(countCustomersSql, rs -> rs.next() ? rs.getInt("count") : 0);
+        int reservationCount = executeQuery(countReservationsSql, rs -> rs.next() ? rs.getInt("count") : 0);
+        double totalInvoiceSum = executeQuery(sumInvoicesSql, rs -> rs.next() ? rs.getDouble("total") : 0.0);
+
+        return new ReportData(cottageCount, customerCount, reservationCount, totalInvoiceSum);
+    }
+
 
     public List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
