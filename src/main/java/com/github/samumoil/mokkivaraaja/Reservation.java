@@ -1,6 +1,7 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class Reservation {
@@ -13,6 +14,9 @@ public class Reservation {
         private int cottageId;
         private float totalPrice;
 
+        // ← new field for when this reservation was created
+        private LocalDateTime createdAt;
+
         public Reservation() {
                 this.id = 0;
                 this.startDate = LocalDate.now();
@@ -21,6 +25,7 @@ public class Reservation {
                 this.customerId = 0;
                 this.cottageId = 0;
                 this.totalPrice = 0f;
+                this.createdAt = LocalDateTime.now();
         }
 
         public Reservation(int id, LocalDate startDate, int nights, int customerId, int cottageId) {
@@ -31,6 +36,7 @@ public class Reservation {
                 this.customerId = customerId;
                 this.cottageId = cottageId;
                 this.totalPrice = calculateTotalPrice();
+                this.createdAt = LocalDateTime.now();
         }
 
         private float calculateTotalPrice() {
@@ -101,17 +107,30 @@ public class Reservation {
                 this.totalPrice = totalPrice;
         }
 
+        /** Convenience for UI: get the cottage’s display number */
         public String getCottageNumber() {
                 Cottage c = CottageHandler.getCottageHandler().getCottageById(cottageId);
                 return c != null ? c.getNumber() : "N/A";
         }
 
+        /** Convenience for UI: get the customer’s name */
         public String getCustomerName() {
                 Customer cust = CustomerHandler.getCustomerHandler().getCustomerById(customerId);
                 return cust != null ? cust.getName() : "Unknown";
         }
 
+        /** Convenience for UI: human‐friendly duration */
         public String getDuration() {
                 return nights + " night(s)";
+        }
+
+        /** ← Here’s the newly implemented getter */
+        public LocalDateTime getCreatedAt() {
+                return createdAt;
+        }
+
+        /** ← And its setter, so your DatabaseWorker can populate it */
+        public void setCreatedAt(LocalDateTime createdAt) {
+                this.createdAt = createdAt;
         }
 }

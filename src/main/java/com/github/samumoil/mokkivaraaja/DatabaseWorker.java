@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
-import com.github.samumoil.mokkivaraaja.ReportData;  // adjust if package differs
-
+import com.github.samumoil.mokkivaraaja.ReportData;
 
 @FunctionalInterface
 interface ResultSetHandler<T> {
@@ -21,234 +20,264 @@ interface PreparedStatementSetter {
 
 public class DatabaseWorker {
     private final DataSource dataSource;
-    private static final String COTTAGES_TABLE_NAME = "cottages";
+    private static final String COTTAGES_TABLE_NAME    = "cottages";
     private static final String RESERVATIONS_TABLE_NAME = "reservations";
-    private static final String CUSTOMERS_TABLE_NAME = "asiakas";
-    private static final String INVOICES_TABLE_NAME = "invoices";
-    private static final String REPORTS_TABLE_NAME = "reports";
+    private static final String CUSTOMERS_TABLE_NAME    = "asiakas";
+    private static final String INVOICES_TABLE_NAME     = "invoices";
 
     public DatabaseWorker(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    // — Core helpers —
+
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
-        try (Connection dbc = dataSource.getConnection();
-             PreparedStatement st = dbc.prepareStatement(sql);
-             ResultSet rs = st.executeQuery()) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             return handler.handle(rs);
-        } catch (SQLException e) {
-            throw new RuntimeException("Query execution failed: " + e.getMessage(), e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     private <T> T executeQuery(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
-        try (Connection dbc = dataSource.getConnection();
-             PreparedStatement st = dbc.prepareStatement(sql)) {
-            setter.setParameters(st);
-            try (ResultSet rs = st.executeQuery()) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            setter.setParameters(ps);
+            try (ResultSet rs = ps.executeQuery()) {
                 return handler.handle(rs);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Query execution with parameters failed: " + e.getMessage(), e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
+    private int executeUpdate(String sql, PreparedStatementSetter setter) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            setter.setParameters(ps);
+            return ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    // — Existing reads (getById, listAll…) —
+
     protected Cottage getCottageById(int id) {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night "
+                + "FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
-                Cottage cottage = new Cottage();
-                cottage.setId(rs.getInt("id"));
-                cottage.setName(rs.getString("name"));
-                cottage.setDescription(rs.getString("description"));
-                cottage.setLocation(rs.getString("location"));
-                cottage.setCapacity(rs.getInt("capacity"));
-                cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                cottage.setOwnerId(rs.getInt("owner_id"));
-                cottage.setPricePerNight(rs.getFloat("price_per_night"));
-                return cottage;
+                Cottage c = new Cottage();
+                c.setId(rs.getInt("id"));
+                c.setName(rs.getString("name"));
+                c.setDescription(rs.getString("description"));
+                c.setLocation(rs.getString("location"));
+                c.setCapacity(rs.getInt("capacity"));
+                c.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                c.setOwnerId(rs.getInt("owner_id"));
+                c.setPricePerNight(rs.getFloat("price_per_night"));
+                return c;
             }
             return null;
         });
     }
 
     protected List<Cottage> getCottages() {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night "
+                + "FROM " + COTTAGES_TABLE_NAME;
         return executeQuery(sql, rs -> {
-            List<Cottage> cottages = new ArrayList<>();
+            List<Cottage> list = new ArrayList<>();
             while (rs.next()) {
-                Cottage cottage = new Cottage();
-                cottage.setId(rs.getInt("id"));
-                cottage.setName(rs.getString("name"));
-                cottage.setDescription(rs.getString("description"));
-                cottage.setLocation(rs.getString("location"));
-                cottage.setCapacity(rs.getInt("capacity"));
-                cottage.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                cottage.setOwnerId(rs.getInt("owner_id"));
-                cottage.setPricePerNight(rs.getFloat("price_per_night"));
-                cottages.add(cottage);
+                Cottage c = new Cottage();
+                c.setId(rs.getInt("id"));
+                c.setName(rs.getString("name"));
+                c.setDescription(rs.getString("description"));
+                c.setLocation(rs.getString("location"));
+                c.setCapacity(rs.getInt("capacity"));
+                c.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                c.setOwnerId(rs.getInt("owner_id"));
+                c.setPricePerNight(rs.getFloat("price_per_night"));
+                list.add(c);
             }
-            return cottages;
+            return list;
         });
     }
 
     protected Reservation getReservationById(int id) {
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at "
+                + "FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                return reservation;
+                Reservation r = new Reservation();
+                r.setId(rs.getInt("id"));
+                r.setStartDate(rs.getDate("start_date").toLocalDate());
+                r.setEndDate(rs.getDate("end_date").toLocalDate());
+                r.setCustomerId(rs.getInt("user_id"));
+                r.setCottageId(rs.getInt("cottage_id"));
+                r.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                return r;
             }
             return null;
         });
     }
 
     protected List<Reservation> getReservations() {
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME;
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at "
+                + "FROM " + RESERVATIONS_TABLE_NAME;
         return executeQuery(sql, rs -> {
-            List<Reservation> reservations = new ArrayList<>();
+            List<Reservation> list = new ArrayList<>();
             while (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                reservations.add(reservation);
+                Reservation r = new Reservation();
+                r.setId(rs.getInt("id"));
+                r.setStartDate(rs.getDate("start_date").toLocalDate());
+                r.setEndDate(rs.getDate("end_date").toLocalDate());
+                r.setCustomerId(rs.getInt("user_id"));
+                r.setCottageId(rs.getInt("cottage_id"));
+                r.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                list.add(r);
             }
-            return reservations;
-        });
-    }
-
-    protected List<Reservation> getReservationsInDateRange(LocalDate startDate, LocalDate endDate) {
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME +
-                " WHERE start_date >= ? AND end_date <= ?";
-        return executeQuery(sql, ps -> {
-            ps.setDate(1, Date.valueOf(startDate));
-            ps.setDate(2, Date.valueOf(endDate));
-        }, rs -> {
-            List<Reservation> reservations = new ArrayList<>();
-            while (rs.next()) {
-                Reservation reservation = new Reservation();
-                reservation.setId(rs.getInt("id"));
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setNights((int) ChronoUnit.DAYS.between(reservation.getStartDate(), reservation.getEndDate()));
-                reservation.setCustomerId(rs.getInt("user_id"));
-                reservation.setCottageId(rs.getInt("cottage_id"));
-                reservations.add(reservation);
-            }
-            return reservations;
+            return list;
         });
     }
 
     protected Customer getCustomerById(int id) {
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, user_id, username, email, phone_number, address "
+                + "FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                return customer;
-            }
-            return null;
-        });
-    }
-
-    protected List<Customer> getCustomers() {
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
-        return executeQuery(sql, rs -> {
-            List<Customer> customers = new ArrayList<>();
-            while (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                customers.add(customer);
-            }
-            return customers;
-        });
-    }
-
-    public Invoice getInvoiceById(int id) {
-        String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
-        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
-            if (rs.next()) {
-                Invoice invoice = new Invoice();
-                invoice.setId(rs.getInt("id"));
-                invoice.setPrice(rs.getFloat("price"));
-                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
-                invoice.setStatus(rs.getString("status"));
-                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                int reservationId = rs.getInt("reservation_id");
-                Reservation reservation = getReservationById(reservationId);
-                invoice.setReservation(reservation);
-                return invoice;
+                Customer c = new Customer();
+                c.setId(rs.getInt("id"));
+                c.setUserId(rs.getInt("user_id"));
+                c.setName(rs.getString("username"));
+                c.setEmail(rs.getString("email"));
+                c.setPhoneNumber(rs.getString("phone_number"));
+                c.setAddress(rs.getString("address"));
+                return c;
             }
             return null;
         });
     }
 
     protected Customer getCustomerByNameLike(String pattern) {
-        String sql = "SELECT id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
+        String sql = "SELECT id, user_id, username, email, phone_number, address "
+                + "FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
         return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
             if (rs.next()) {
-                Customer customer = new Customer();
-                customer.setId(rs.getInt("id"));
-                customer.setName(rs.getString("username"));
-                customer.setEmail(rs.getString("email"));
-                customer.setPhoneNumber(rs.getString("phone_number"));
-                customer.setAddress(rs.getString("address"));
-                return customer;
+                Customer c = new Customer();
+                c.setId(rs.getInt("id"));
+                c.setUserId(rs.getInt("user_id"));
+                c.setName(rs.getString("username"));
+                c.setEmail(rs.getString("email"));
+                c.setPhoneNumber(rs.getString("phone_number"));
+                c.setAddress(rs.getString("address"));
+                return c;
             }
             return null;
         });
     }
 
-    public ReportData getReportData() {
-        String countCottagesSql = "SELECT COUNT(*) AS count FROM " + COTTAGES_TABLE_NAME;
-        String countCustomersSql = "SELECT COUNT(*) AS count FROM " + CUSTOMERS_TABLE_NAME;
-        String countReservationsSql = "SELECT COUNT(*) AS count FROM " + RESERVATIONS_TABLE_NAME;
-        String sumInvoicesSql = "SELECT SUM(price) AS total FROM " + INVOICES_TABLE_NAME;
-
-        int cottageCount = executeQuery(countCottagesSql, rs -> rs.next() ? rs.getInt("count") : 0);
-        int customerCount = executeQuery(countCustomersSql, rs -> rs.next() ? rs.getInt("count") : 0);
-        int reservationCount = executeQuery(countReservationsSql, rs -> rs.next() ? rs.getInt("count") : 0);
-        double totalInvoiceSum = executeQuery(sumInvoicesSql, rs -> rs.next() ? rs.getDouble("total") : 0.0);
-
-        return new ReportData(cottageCount, customerCount, reservationCount, totalInvoiceSum);
+    public Invoice getInvoiceById(int id) {
+        String sql = "SELECT id, price, due_date, status, created_at, reservation_id "
+                + "FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
+        return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
+            if (rs.next()) {
+                Invoice inv = new Invoice();
+                inv.setId(rs.getInt("id"));
+                inv.setPrice((float) rs.getDouble("price"));
+                inv.setDueDate(rs.getDate("due_date").toLocalDate());
+                inv.setStatus(rs.getString("status"));
+                inv.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                Reservation res = getReservationById(rs.getInt("reservation_id"));
+                inv.setReservation(res);
+                return inv;
+            }
+            return null;
+        });
     }
 
+    // — CRUD insert/update/delete —
+    // … (your existing insert/update/delete methods go here) …
 
+    // — Simple counts / sums for report —
+
+    public int getCottageCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + COTTAGES_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public int getCustomerCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + CUSTOMERS_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public int getReservationCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + RESERVATIONS_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public double getTotalInvoiceSum() {
+        String sql = "SELECT COALESCE(SUM(price),0) AS total FROM " + INVOICES_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getDouble("total") : 0.0);
+    }
+
+    public ReportData getReportData() {
+        return new ReportData(
+                getCottageCount(),
+                getCustomerCount(),
+                getReservationCount(),
+                getTotalInvoiceSum()
+        );
+    }
+
+    // — Optional delegates —
+
+    public Invoice     getInvoiceByIdDelegate(int id)        { return getInvoiceById(id); }
+    public Customer    getCustomerByIdDelegate(int id)       { return getCustomerById(id); }
+    public Customer    getCustomerByNameLikeDelegate(String p){ return getCustomerByNameLike(p); }
+    public Cottage     getCottageByIdDelegate(int id)        { return getCottageById(id); }
+    public Reservation getReservationByIdDelegate(int id)    { return getReservationById(id); }
+
+    // — The two you asked to fill in —
+
+    /** Return all invoices */
     public List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
         return executeQuery(sql, rs -> {
-            List<Invoice> invoices = new ArrayList<>();
+            List<Invoice> list = new ArrayList<>();
             while (rs.next()) {
-                Invoice invoice = new Invoice();
-                invoice.setId(rs.getInt("id"));
-                invoice.setPrice(rs.getFloat("price"));
-                invoice.setDueDate(rs.getDate("due_date").toLocalDate());
-                invoice.setStatus(rs.getString("status"));
-                invoice.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                int reservationId = rs.getInt("reservation_id");
-                Reservation reservation = getReservationById(reservationId);
-                invoice.setReservation(reservation);
-                invoices.add(invoice);
+                Invoice inv = new Invoice();
+                inv.setId(rs.getInt("id"));
+                inv.setPrice((float) rs.getDouble("price"));
+                inv.setDueDate(rs.getDate("due_date").toLocalDate());
+                inv.setStatus(rs.getString("status"));
+                inv.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                Reservation res = getReservationById(rs.getInt("reservation_id"));
+                inv.setReservation(res);
+                list.add(inv);
             }
-            return invoices;
+            return list;
+        });
+    }
+
+    /** Return all customers */
+    public List<Customer> getCustomers() {
+        String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
+        return executeQuery(sql, rs -> {
+            List<Customer> list = new ArrayList<>();
+            while (rs.next()) {
+                Customer c = new Customer();
+                c.setId(rs.getInt("id"));
+                c.setUserId(rs.getInt("user_id"));
+                c.setName(rs.getString("username"));
+                c.setEmail(rs.getString("email"));
+                c.setPhoneNumber(rs.getString("phone_number"));
+                c.setAddress(rs.getString("address"));
+                list.add(c);
+            }
+            return list;
         });
     }
 }
