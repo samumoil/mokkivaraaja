@@ -142,24 +142,20 @@ public class Main extends Application {
                 searchAndFillCottageDetails(raw);
                 break;
             case "Asiakkaat":
-                Customer cust = null;
-                try {
-                    String idOnly = raw.replaceAll("^\\s*(\\d+).*$", "$1");
-                    cust = dbw.getCustomerById(Integer.parseInt(idOnly));
-                } catch (Exception ignored) {
-                }
-                if (cust == null) {
-                    cust = dbw.getCustomerByNameLike("%" + raw + "%");
-                }
-                if (cust != null) {
-                    AsiakasNimi.setText(cust.getName());
-                    AsiakasEmail.setText(cust.getEmail());
-                    AsiakasPuhelin.setText(cust.getPhoneNumber());
-                    AsiakasOsoite.setText(cust.getAddress());
-                    AsiakkaanMokki.setText(String.valueOf(cust.getId()));
-                } else {
+                String idOnly = raw.replaceAll("^\\s*(\\d+).*$", "$1");
+
+                Optional<Customer> optionalCustomer = dbw.getCustomerById(Integer.parseInt(idOnly))
+                         .or(() -> dbw.getCustomerByNameLike(idOnly));
+
+                optionalCustomer.ifPresentOrElse(customer -> {
+                    AsiakasNimi.setText(customer.getName());
+                    AsiakasEmail.setText(customer.getEmail());
+                    AsiakasPuhelin.setText(customer.getPhoneNumber());
+                    AsiakasOsoite.setText(customer.getAddress());
+                    AsiakkaanMokki.setText(String.valueOf(customer.getId()));
+                }, () -> {
                     showError("Asiakasta ei löytynyt: " + raw);
-                }
+                });
                 break;
             case "Varaukset":
                 searchAndFillReservationDetails(raw);
@@ -230,15 +226,14 @@ public class Main extends Application {
 
     private void searchAndFillCottageDetails(String id) {
         try {
-            Cottage c = dbw.getCottageById(Integer.parseInt(id));
-            if (c != null) {
-                osoitekenta.setText(c.getAddress());
-                mika.setText(String.valueOf(c.getAge()));
-                mkoko.setText(String.valueOf(c.getSize()));
-                mn.setText(c.getNumber());
-            } else {
+            dbw.getCottageById(Integer.parseInt(id)).ifPresentOrElse(cottage -> {
+                osoitekenta.setText(cottage.getAddress());
+                mika.setText(String.valueOf(cottage.getAge()));
+                mkoko.setText(String.valueOf(cottage.getSize()));
+                mn.setText(cottage.getNumber());
+            }, () -> {
                 showError("Mökkiä ei löytynyt: " + id);
-            }
+            });
         } catch (NumberFormatException ex) {
             showError("Virheellinen mökin ID: " + id);
         }
@@ -246,15 +241,14 @@ public class Main extends Application {
 
     private void searchAndFillReservationDetails(String id) {
         try {
-            Reservation r = dbw.getReservationById(Integer.parseInt(id));
-            if (r != null) {
-                varausMokkiNumero.setText(r.getCottageNumber());
-                varaaja.setText(r.getCustomerName());
-                kesto.setText(String.valueOf(r.getDuration()));
-                alkupaiva.setText(r.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-            } else {
+            dbw.getReservationById(Integer.parseInt(id)).ifPresentOrElse(reservation -> {
+                varausMokkiNumero.setText(reservation.getCottageNumber());
+                varaaja.setText(reservation.getCustomerName());
+                kesto.setText(String.valueOf(reservation.getDuration()));
+                alkupaiva.setText(reservation.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+            }, () -> {
                 showError("Varausta ei löytynyt: " + id);
-            }
+            });
         } catch (NumberFormatException ex) {
             showError("Virheellinen varaus-ID: " + id);
         }
@@ -262,15 +256,14 @@ public class Main extends Application {
 
     private void searchAndFillLaskuDetails(String id) {
         try {
-            Invoice inv = dbw.getInvoiceById(Integer.parseInt(id));
-            if (inv != null) {
-                laskuSaaja.setText(inv.getRecipient());
-                laskuOsoite.setText(inv.getAddress());
-                laskuSumma.setText(String.valueOf(inv.getAmount()));
-                laskuMokkiNumero.setText(inv.getCottageNumber());
-            } else {
+            dbw.getInvoiceById(Integer.parseInt(id)).ifPresentOrElse(invoice -> {
+                laskuSaaja.setText(invoice.getRecipient());
+                laskuOsoite.setText(invoice.getAddress());
+                laskuSumma.setText(String.valueOf(invoice.getAmount()));
+                laskuMokkiNumero.setText(invoice.getCottageNumber());
+            }, () -> {
                 showError("Laskua ei löytynyt: " + id);
-            }
+            });
         } catch (NumberFormatException ex) {
             showError("Virheellinen lasku-ID: " + id);
         }
