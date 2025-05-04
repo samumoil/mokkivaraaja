@@ -199,9 +199,6 @@ public class DatabaseWorker {
     }
 
     // — CRUD insert/update/delete —
-    // … (your existing insert/update/delete methods go here) …
-
-    // — Simple counts / sums for report —
 
     public int getCottageCount() {
         String sql = "SELECT COUNT(*) AS cnt FROM " + COTTAGES_TABLE_NAME;
@@ -240,8 +237,6 @@ public class DatabaseWorker {
     public Cottage     getCottageByIdDelegate(int id)        { return getCottageById(id); }
     public Reservation getReservationByIdDelegate(int id)    { return getReservationById(id); }
 
-    // — The two you asked to fill in —
-
     /** Return all invoices */
     public List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
@@ -279,5 +274,40 @@ public class DatabaseWorker {
             }
             return list;
         });
+    }
+
+    public void updateCottage(Cottage existing) {
+        String sql = "UPDATE " + COTTAGES_TABLE_NAME + " SET "
+                + "name = ?, description = ?, location = ?, capacity = ?, "
+                + "price_per_night = ? WHERE id = ?";
+        executeUpdate(sql, ps -> {
+            ps.setString(1, existing.getName());
+            ps.setString(2, existing.getDescription());
+            ps.setString(3, existing.getLocation());
+            ps.setInt(4, existing.getCapacity());
+            ps.setFloat(5, existing.getPricePerNight());
+            ps.setInt(6, existing.getId());
+        });
+    }
+
+
+    public void insertCottage(Cottage cottage) {
+        String sql = "INSERT INTO " + COTTAGES_TABLE_NAME + " (name, description, location, capacity, price_per_night, created_at, owner_id) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        executeUpdate(sql, ps -> {
+            ps.setString(1, cottage.getName());
+            ps.setString(2, cottage.getDescription());
+            ps.setString(3, cottage.getLocation());
+            ps.setInt(4, cottage.getCapacity());
+            ps.setFloat(5, cottage.getPricePerNight());
+            ps.setTimestamp(6, Timestamp.valueOf(cottage.getCreatedAt()));
+            ps.setInt(7, cottage.getOwnerId());
+        });
+    }
+
+
+    public void deleteCottage(int id) {
+        String sql = "DELETE FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
+        executeUpdate(sql, ps -> ps.setInt(1, id));
     }
 }

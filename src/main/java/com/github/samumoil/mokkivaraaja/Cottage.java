@@ -47,6 +47,9 @@ public class Cottage {
         this.pricePerNight = pricePerNight;
     }
 
+    public Cottage(String address, int age, int size, int id) {
+    }
+
     public int getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
@@ -84,5 +87,14 @@ public class Cottage {
 
     public String getCottageNumber() {
         return String.valueOf(id);
+    }
+
+    public void setAddress(String address) {
+    }
+
+    public void setAge(int age) {
+    }
+
+    public void setSize(int size) {
     }
 }
