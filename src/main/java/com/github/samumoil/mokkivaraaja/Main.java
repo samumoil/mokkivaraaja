@@ -46,6 +46,18 @@ public class Main extends Application {
 
     private TextField raporttiKentta = new TextField();
 
+    private Button tyhjenna1=new Button("Tyhjennä");
+    private Button uusi1=new Button("luo uusi");
+    private Button tyhjenna2=new Button("Tyhjennä");
+    private Button uusi2=new Button("luo uusi");
+    private Button tyhjenna3=new Button("Tyhjennä");
+    private Button uusi3=new Button("luo uusi");
+    private Button tyhjenna4=new Button("Tyhjennä");
+    private Button uusi4=new Button("luo uusi");
+    private Button tyhjenna5=new Button("Tyhjennä");
+    private Button uusi5=new Button("luo uusi");
+
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -164,7 +176,9 @@ public class Main extends Application {
                 new Label("Mökin osoite:"), osoitekenta,
                 new Label("Mökin ikä:"), mika,
                 new Label("Mökin koko:"), mkoko,
-                new Label("Mökin numero:"), mn
+                new Label("Mökin numero:"), mn,
+                new Button("Tallenna"),
+                uusi1, tyhjenna1
         );
     }
 
@@ -174,7 +188,9 @@ public class Main extends Application {
                 new Label("Mökin numero:"), varausMokkiNumero,
                 new Label("Varaaja:"), varaaja,
                 new Label("Kesto:"), kesto,
-                new Label("Alkupäivä:"), alkupaiva
+                new Label("Alkupäivä:"), alkupaiva,
+                new Button("Tallenna"),
+                uusi2, tyhjenna2
         );
     }
 
@@ -184,7 +200,9 @@ public class Main extends Application {
                 new Label("Sähköposti:"), AsiakasEmail,
                 new Label("Puhelin:"), AsiakasPuhelin,
                 new Label("Osoite:"), AsiakasOsoite,
-                new Label("Mökin numero:"), AsiakkaanMokki
+                new Label("Mökin numero:"), AsiakkaanMokki,
+                new Button("Tallenna"),
+                uusi3, tyhjenna3
         );
     }
 
@@ -194,15 +212,20 @@ public class Main extends Application {
                 new Label("Saaja:"), laskuSaaja,
                 new Label("Osoite:"), laskuOsoite,
                 new Label("Summa:"), laskuSumma,
-                new Label("Mökin numero:"), laskuMokkiNumero
+                new Label("Mökin numero:"), laskuMokkiNumero,
+                new Button("Tallenna"),
+                uusi4, tyhjenna4
         );
     }
 
     private VBox view5() {
         return new VBox(8,
-                new Label("Raportti:"), raporttiKentta
+                new Label("Raportti:"), raporttiKentta,
+                new Button("Tallenna"),
+                uusi5, tyhjenna5
         );
     }
+
 
     private void searchAndFillCottageDetails(String id) {
         try {
