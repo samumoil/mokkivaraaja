@@ -3,7 +3,6 @@ package com.github.samumoil.mokkivaraaja;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -14,79 +13,45 @@ import java.time.format.DateTimeFormatter;
 
 public class Main extends Application {
     private HikariDataSource dataSource;
-    private StackPane viewArea;
     private DatabaseWorker dbw;
+    private StackPane viewArea;
 
-    private Label mokintieto = new Label("Mökin tietoja");
-    private Label osoite = new Label("Mökin osoite:");
+    private ComboBox<String> viewChooser;
+    private TextField hakukentta;
+    private Button hakuButton;
+    private ListView<String> list = new ListView<>();
+
     private TextField osoitekenta = new TextField();
-    private Label mokiika = new Label("Mökin ikä:");
-    private TextField mika = new TextField();
-    private Label koko = new Label("Mökin koko:");
-    private TextField mkoko = new TextField();
-    private Label mokinumero = new Label("Mökin numero:");
-    private TextField mn = new TextField();
-    private Button tallennus = new Button("Tallenna");
-    private Button hakuButton = new Button("Haku");
-    private Button asiakasHakuButton = new Button("Asiakas Haku");
-    private TextField AsiakasNimi = new TextField();
+    private TextField mika        = new TextField();
+    private TextField mkoko       = new TextField();
+    private TextField mn          = new TextField();
+
+    private TextField AsiakasNimi    = new TextField();
+    private TextField AsiakasEmail   = new TextField();
     private TextField AsiakasPuhelin = new TextField();
-    private TextField AsiakasEmail = new TextField();
-    private TextField AsiakasOsoite = new TextField();
+    private TextField AsiakasOsoite  = new TextField();
     private TextField AsiakkaanMokki = new TextField();
+
+    private TextField varausIdKentta    = new TextField();
     private TextField varausMokkiNumero = new TextField();
-    private TextField varaaja = new TextField();
-    private TextField kesto = new TextField();
-    private TextField alkupaiva = new TextField();
-    private TextField varausIdKentta = new TextField();
-    private Button varausHakuButton = new Button("Varaus Haku");
-    private TextField laskuIdField = new TextField();
-    private TextField laskuSaaja = new TextField();
-    private TextField laskuOsoite = new TextField();
-    private TextField laskuSumma = new TextField();
+    private TextField varaaja           = new TextField();
+    private TextField kesto             = new TextField();
+    private TextField alkupaiva         = new TextField();
+
+    private TextField laskuIdField     = new TextField();
+    private TextField laskuSaaja       = new TextField();
+    private TextField laskuOsoite      = new TextField();
+    private TextField laskuSumma       = new TextField();
     private TextField laskuMokkiNumero = new TextField();
-    private Button laskuHakuButton = new Button("Hae lasku");
 
-    private VBox view1 = new VBox(
-            mokintieto,
-            osoite,
-            osoitekenta,
-            mokiika,
-            mika,
-            koko,
-            mkoko,
-            mokinumero,
-            mn,
-            tallennus
-    );
+    private TextField raporttiKentta = new TextField();
 
-    private VBox view2 = new VBox(new Label("Varaus"),
-            new Label("Mökin numero:"), new TextField(),
-            new Label("Varaaja:"), new TextField(),
-            new Label("Varauksen kesto:"), new TextField(),
-            new Label("Varauksen alku päivä:"), new TextField(),
-            new Button("Tallenna"));
-
-    private VBox view3 = new VBox(new Label("Asiakkaan tiedot"),
-            new Label("Nimi:"), new TextField(),
-            new Label("Sähköposti:"), new TextField(),
-            new Label("Osoite:"), new TextField(),
-            new Label("Mökin numero:"), new TextField(),
-            new Button("Tallenna"));
-
-    private VBox view4 = new VBox(new Label("Laskun tiedot"),
-            new Label("Saaja:"), new TextField(),
-            new Label("Osoite:"), new TextField(),
-            new Label("Summa:"), new TextField(),
-            new Label("Mökin numero:"), new TextField(),
-            new Button("Tallenna"));
-
-    private VBox view5 = new VBox(new Label("Raportin luominen"),
-            new Label("Raportti:"), new TextField(),
-            new Button("Tallenna"));
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         dataSource = createDataSource();
         dbw = new DatabaseWorker(dataSource);
 
@@ -95,222 +60,222 @@ public class Main extends Application {
         ReservationHandler.createReservationHandler(dbw);
         InvoiceHandler.createInvoiceHandler(dbw);
 
-        BorderPane root = new BorderPane();
-
-        ComboBox<String> viewChooser = new ComboBox<>();
+        viewChooser = new ComboBox<>();
         viewChooser.getItems().addAll("Mökit", "Varaukset", "Asiakkaat", "Laskut", "Raportit");
         viewChooser.setValue("Mökit");
 
+        hakukentta = new TextField();
+        hakukentta.setPromptText("ID");
+
+        hakuButton = new Button("Haku");
+        hakuButton.setOnAction(e -> doUnifiedSearch());
+
+        HBox topBar = new HBox(10,
+                new Label("Valitse näkymä:"), viewChooser,
+                new Label("Haku:"), hakukentta, hakuButton
+        );
+
+        list.setPrefWidth(180);
+        list.setItems(CottageHandler.getCottageHandler().getCottageNames());
+
         viewArea = new StackPane();
-        viewArea.getChildren().add(view1);
+        viewArea.getChildren().add(view1());
 
-        HBox topPane = new HBox();
-        Label hakuteksti = new Label("Mökin haku");
-        TextField hakukentta = new TextField();
-        topPane.getChildren().addAll(viewChooser, hakuteksti, hakukentta, hakuButton, asiakasHakuButton, varausHakuButton, laskuHakuButton);
-
-        Pane listaNakyma = new Pane();
-        ListView<String> lista = new ListView<>();
-        lista.setItems(CottageHandler.getCottageHandler().getCottageNames());
-        listaNakyma.getChildren().add(lista);
-
-        root.setTop(topPane);
+        BorderPane root = new BorderPane();
+        root.setTop(topBar);
         root.setCenter(viewArea);
-        root.setRight(listaNakyma);
+        root.setRight(list);
 
         viewChooser.setOnAction(e -> {
-            String selected = viewChooser.getValue();
-            switch (selected) {
+            String sel = viewChooser.getValue();
+            switch (sel) {
                 case "Mökit":
-                    viewArea.getChildren().setAll(view1);
-                    lista.setItems(CottageHandler.getCottageHandler().getCottageNames());
+                    viewArea.getChildren().setAll(view1());
+                    list.setItems(CottageHandler.getCottageHandler().getCottageNames());
                     break;
                 case "Varaukset":
-                    viewArea.getChildren().setAll(view2);
-                    lista.setItems(ReservationHandler.getReservationHandler().getReservationNames());
+                    viewArea.getChildren().setAll(view2());
+                    list.setItems(ReservationHandler.getReservationHandler().getReservationNames());
                     break;
                 case "Asiakkaat":
-                    viewArea.getChildren().setAll(view3);
-                    lista.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
+                    viewArea.getChildren().setAll(view3());
+                    list.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
                     break;
                 case "Laskut":
-                    viewArea.getChildren().setAll(view4);
-                    lista.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
+                    viewArea.getChildren().setAll(view4());
+                    list.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
                     break;
                 case "Raportit":
-                    viewArea.getChildren().setAll(view5);
+                    viewArea.getChildren().setAll(view5());
+                    list.getItems().clear();
                     break;
             }
         });
 
-        hakuButton.setOnAction(e -> {
-            String cottageId = hakukentta.getText();
-            searchAndFillCottageDetails(cottageId);
-        });
-
-        asiakasHakuButton.setOnAction(e -> {
-            String customerId = AsiakasNimi.getText();
-            searchAndFillCustomerDetails(customerId);
-        });
-
-        varausHakuButton.setOnAction(e -> {
-            String reservationId = varausIdKentta.getText();
-            searchAndFillReservationDetails(reservationId);
-        });
-
-        Scene scene = new Scene(root, 800, 600);
+        primaryStage.setScene(new Scene(root, 900, 500));
         primaryStage.setTitle("Mökki Management");
-        primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void doUnifiedSearch() {
+        String raw = hakukentta.getText().trim();
+        if (raw.isEmpty()) {
+            showError("Anna ID tai osa nimestä");
+            return;
+        }
+
+        switch (viewChooser.getValue()) {
+            case "Mökit":
+                searchAndFillCottageDetails(raw);
+                break;
+            case "Asiakkaat":
+                Customer cust = null;
+                try {
+                    String idOnly = raw.replaceAll("^\\s*(\\d+).*$", "$1");
+                    cust = dbw.getCustomerById(Integer.parseInt(idOnly));
+                } catch (Exception ignored) {}
+                if (cust == null) {
+                    cust = dbw.getCustomerByNameLike("%" + raw + "%");
+                }
+                if (cust != null) {
+                    AsiakasNimi.setText(cust.getName());
+                    AsiakasEmail.setText(cust.getEmail());
+                    AsiakasPuhelin.setText(cust.getPhoneNumber());
+                    AsiakasOsoite.setText(cust.getAddress());
+                    AsiakkaanMokki.setText(String.valueOf(cust.getId()));
+                } else {
+                    showError("Asiakasta ei löytynyt: " + raw);
+                }
+                break;
+            case "Varaukset":
+                searchAndFillReservationDetails(raw);
+                break;
+            case "Laskut":
+                searchAndFillLaskuDetails(raw);
+                break;
+            case "Raportit":
+                showError("Raporttitoiminto ei ole vielä toteutettu");
+                break;
+        }
+    }
+
+    private VBox view1() {
+        return new VBox(8,
+                new Label("Mökin osoite:"), osoitekenta,
+                new Label("Mökin ikä:"), mika,
+                new Label("Mökin koko:"), mkoko,
+                new Label("Mökin numero:"), mn
+        );
+    }
+
+    private VBox view2() {
+        return new VBox(8,
+                new Label("Varaus-ID:"), varausIdKentta,
+                new Label("Mökin numero:"), varausMokkiNumero,
+                new Label("Varaaja:"), varaaja,
+                new Label("Kesto:"), kesto,
+                new Label("Alkupäivä:"), alkupaiva
+        );
+    }
+
+    private VBox view3() {
+        return new VBox(8,
+                new Label("Nimi:"), AsiakasNimi,
+                new Label("Sähköposti:"), AsiakasEmail,
+                new Label("Puhelin:"), AsiakasPuhelin,
+                new Label("Osoite:"), AsiakasOsoite,
+                new Label("Mökin numero:"), AsiakkaanMokki
+        );
+    }
+
+    private VBox view4() {
+        return new VBox(8,
+                new Label("Lasku-ID:"), laskuIdField,
+                new Label("Saaja:"), laskuSaaja,
+                new Label("Osoite:"), laskuOsoite,
+                new Label("Summa:"), laskuSumma,
+                new Label("Mökin numero:"), laskuMokkiNumero
+        );
+    }
+
+    private VBox view5() {
+        return new VBox(8,
+                new Label("Raportti:"), raporttiKentta
+        );
+    }
+
+    private void searchAndFillCottageDetails(String id) {
+        try {
+            Cottage c = dbw.getCottageById(Integer.parseInt(id));
+            if (c != null) {
+                osoitekenta.setText(c.getAddress());
+                mika.setText(String.valueOf(c.getAge()));
+                mkoko.setText(String.valueOf(c.getSize()));
+                mn.setText(c.getNumber());
+            } else {
+                showError("Mökkiä ei löytynyt: " + id);
+            }
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen mökin ID: " + id);
+        }
+    }
+
+    private void searchAndFillReservationDetails(String id) {
+        try {
+            Reservation r = dbw.getReservationById(Integer.parseInt(id));
+            if (r != null) {
+                varausMokkiNumero.setText(r.getCottageNumber());
+                varaaja.setText(r.getCustomerName());
+                kesto.setText(String.valueOf(r.getDuration()));
+                alkupaiva.setText(r.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+            } else {
+                showError("Varausta ei löytynyt: " + id);
+            }
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen varaus-ID: " + id);
+        }
+    }
+
+    private void searchAndFillLaskuDetails(String id) {
+        try {
+            Invoice inv = dbw.getInvoiceById(Integer.parseInt(id));
+            if (inv != null) {
+                laskuSaaja.setText(inv.getRecipient());
+                laskuOsoite.setText(inv.getAddress());
+                laskuSumma.setText(String.valueOf(inv.getAmount()));
+                laskuMokkiNumero.setText(inv.getCottageNumber());
+            } else {
+                showError("Laskua ei löytynyt: " + id);
+            }
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen lasku-ID: " + id);
+        }
+    }
+
+    private HikariDataSource createDataSource() {
+        HikariConfig cfg = new HikariConfig();
+        DatabaseConfig dbc = new DatabaseConfig();
+        cfg.setJdbcUrl(dbc.getDbUrl());
+        cfg.setUsername(dbc.getDbUser());
+        cfg.setPassword(dbc.getDbPassword());
+        cfg.addDataSourceProperty("cachePrepStmts", "true");
+        cfg.addDataSourceProperty("prepStmtCacheSize", "250");
+        cfg.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        cfg.setMaximumPoolSize(10);
+        return new HikariDataSource(cfg);
     }
 
     @Override
     public void stop() throws Exception {
-        if (dataSource != null) {
-            dataSource.close();
-        }
+        if (dataSource != null) dataSource.close();
         super.stop();
     }
 
-    private HikariDataSource createDataSource() {
-        DatabaseConfig dbConfig = new DatabaseConfig();
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(dbConfig.getDbUrl());
-        config.setUsername(dbConfig.getDbUser());
-        config.setPassword(dbConfig.getDbPassword());
-
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        config.setMaximumPoolSize(10);
-
-        return new HikariDataSource(config);
-    }
-
-    private void searchAndFillCottageDetails(String cottageId) {
-        if (cottageId != null && !cottageId.isEmpty()) {
-            Cottage cottage = dbw.getCottageById(Integer.parseInt(cottageId));
-            if (cottage != null) {
-                osoitekenta.setText(cottage.getAddress());
-                mika.setText(String.valueOf(cottage.getAge()));
-                mkoko.setText(String.valueOf(cottage.getSize()));
-                mn.setText(cottage.getNumber());
-            } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Mökkiä ei löydy ID:llä " + cottageId);
-                alert.showAndWait();
-            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Syötä mökin ID");
-            alert.showAndWait();
-        }
-    }
-
-    private void searchAndFillReservationDetails(String reservationId) {
-        if (reservationId != null && !reservationId.isEmpty()) {
-            try {
-                int id = Integer.parseInt(reservationId);
-                Reservation reservation = dbw.getReservationById(id);
-
-                if (reservation != null) {
-                    varausMokkiNumero.setText(reservation.getCottageNumber());
-                    varaaja.setText(reservation.getCustomerName());
-                    kesto.setText(String.valueOf(reservation.getDuration()));
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-                    alkupaiva.setText(reservation.getStartDate().format(formatter));
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Virhe");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Varausta ei löytynyt varaus-ID:llä " + reservationId);
-                    alert.showAndWait();
-                }
-            } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Virhe");
-                alert.setHeaderText(null);
-                alert.setContentText("Virheellinen varaus-ID: " + reservationId + ". ID:n tulee olla numero.");
-                alert.showAndWait();
-            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Virhe");
-            alert.setHeaderText(null);
-            alert.setContentText("Syötä varaus-ID");
-            alert.showAndWait();
-        }
-    }
-
-    private void searchAndFillCustomerDetails(String customerId) {
-        if (customerId != null && !customerId.isEmpty()) {
-            try {
-                int id = Integer.parseInt(customerId);
-                Customer customer = dbw.getCustomerById(id);
-
-                if (customer != null) {
-                    AsiakasNimi.setText(customer.getName());
-                    AsiakasEmail.setText(customer.getEmail());
-                    AsiakasPuhelin.setText(customer.getPhoneNumber());
-                    AsiakasOsoite.setText(customer.getAddress());
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Asiakasta ei löydy ID:llä " + id);
-                    alert.showAndWait();
-                }
-            } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Virheellinen asiakas-ID: " + customerId);
-                alert.showAndWait();
-            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Syötä asiakas-ID");
-            alert.showAndWait();
-        }
-    }
-
-    private void searchAndFillLaskuDetails(String invoiceId) {
-        if (invoiceId != null && !invoiceId.isEmpty()) {
-            try {
-                int id = Integer.parseInt(invoiceId);
-                Invoice invoice = dbw.getInvoiceById(id);
-
-                if (invoice != null) {
-                    laskuSaaja.setText(invoice.getRecipient());
-                    laskuOsoite.setText(invoice.getAddress());
-                    laskuSumma.setText(String.valueOf(invoice.getAmount()));
-                    laskuMokkiNumero.setText(invoice.getCottageNumber());
-                } else {
-                    showError("Laskua ei löytynyt ID:llä " + invoiceId);
-                }
-            } catch (NumberFormatException e) {
-                showError("Virheellinen laskun ID: " + invoiceId + ". ID:n tulee olla numero.");
-            }
-        } else {
-            showError("Syötä laskun ID");
-        }
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Virhe");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
+    private void showError(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Virhe");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 }
