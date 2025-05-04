@@ -46,7 +46,24 @@ public class Main extends Application {
     private TextField laskuSumma = new TextField();
     private TextField laskuMokkiNumero = new TextField();
     private Button laskuHakuButton = new Button("Hae lasku");
-
+    private Button tyhjenna=new Button("Tyhjennä");
+    private Button uusi=new Button("luo uusi");
+    private TextField varaajanimi=new TextField();
+   private TextField mokinid=new TextField();
+    private TextField varaajapuh=new TextField();
+    private TextField varaajasäh=new TextField();
+    private TextField varaajaalku=new TextField();
+    private TextField varaajaloppu=new TextField();
+    private Button tyhjenna1=new Button("Tyhjennä");
+    private Button uusi1=new Button("luo uusi");
+    private Button tyhjenna2=new Button("Tyhjennä");
+    private Button uusi2=new Button("luo uusi");
+    private Button tyhjenna3=new Button("Tyhjennä");
+    private Button uusi3=new Button("luo uusi");
+    private Button tyhjenna4=new Button("Tyhjennä");
+    private Button uusi4=new Button("luo uusi");
+    private Button tyhjenna5=new Button("Tyhjennä");
+    private Button uusi5=new Button("luo uusi");
     private VBox view1 = new VBox(
             mokintieto,
             osoite,
@@ -57,7 +74,8 @@ public class Main extends Application {
             mkoko,
             mokinumero,
             mn,
-            tallennus
+            tallennus,
+            uusi,tyhjenna
     );
 
     private VBox view2 = new VBox(new Label("Varaus"),
@@ -65,25 +83,37 @@ public class Main extends Application {
             new Label("Varaaja:"), new TextField(),
             new Label("Varauksen kesto:"), new TextField(),
             new Label("Varauksen alku päivä:"), new TextField(),
-            new Button("Tallenna"));
+            new Button("Tallenna"),uusi1,tyhjenna1);
 
     private VBox view3 = new VBox(new Label("Asiakkaan tiedot"),
             new Label("Nimi:"), new TextField(),
             new Label("Sähköposti:"), new TextField(),
             new Label("Osoite:"), new TextField(),
             new Label("Mökin numero:"), new TextField(),
-            new Button("Tallenna"));
+            new Button("Tallenna"),
+            uusi2,tyhjenna2);
 
     private VBox view4 = new VBox(new Label("Laskun tiedot"),
             new Label("Saaja:"), new TextField(),
             new Label("Osoite:"), new TextField(),
             new Label("Summa:"), new TextField(),
             new Label("Mökin numero:"), new TextField(),
-            new Button("Tallenna"));
+            new Button("Tallenna"),
+            uusi3,tyhjenna3);
 
     private VBox view5 = new VBox(new Label("Raportin luominen"),
             new Label("Raportti:"), new TextField(),
-            new Button("Tallenna"));
+            new Button("Tallenna")
+            ,uusi4,tyhjenna4);
+    private VBox view6 = new VBox(new Label("Uusi varaus"),
+            new Label("varaajan nimi:"), varaajanimi,
+            new Label("mökin id:"),mokinid,
+            new Label("varaajan puhelin numero:"),varaajapuh,
+            new Label("varaajan sähköposti:"),varaajasäh,
+            new Label("varauksen alku:"),varaajaalku,
+            new Label("varauksen loppu:"),varaajaloppu,
+            new Button("Tallenna"),
+            uusi5,tyhjenna5);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -98,7 +128,7 @@ public class Main extends Application {
         BorderPane root = new BorderPane();
 
         ComboBox<String> viewChooser = new ComboBox<>();
-        viewChooser.getItems().addAll("Mökit", "Varaukset", "Asiakkaat", "Laskut", "Raportit");
+        viewChooser.getItems().addAll("Mökit", "Varaukset", "Asiakkaat", "Laskut", "Raportit","uusi varaus");
         viewChooser.setValue("Mökit");
 
         viewArea = new StackPane();
@@ -139,6 +169,9 @@ public class Main extends Application {
                     break;
                 case "Raportit":
                     viewArea.getChildren().setAll(view5);
+                    break;
+                case "uusi varaus":
+                    viewArea.getChildren().setAll(view6);
                     break;
             }
         });
