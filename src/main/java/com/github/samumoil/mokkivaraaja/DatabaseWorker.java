@@ -20,16 +20,14 @@ interface PreparedStatementSetter {
 
 public class DatabaseWorker {
     private final DataSource dataSource;
-    private static final String COTTAGES_TABLE_NAME    = "cottages";
+    private static final String COTTAGES_TABLE_NAME = "cottages";
     private static final String RESERVATIONS_TABLE_NAME = "reservations";
-    private static final String CUSTOMERS_TABLE_NAME    = "asiakas";
-    private static final String INVOICES_TABLE_NAME     = "invoices";
+    private static final String CUSTOMERS_TABLE_NAME = "asiakas";
+    private static final String INVOICES_TABLE_NAME = "invoices";
 
     public DatabaseWorker(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-
-    // — Core helpers —
 
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
         try (Connection c = dataSource.getConnection();
@@ -63,11 +61,8 @@ public class DatabaseWorker {
         }
     }
 
-    // — Existing reads (getById, listAll…) —
-
     protected Cottage getCottageById(int id) {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night "
-                + "FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Cottage c = new Cottage();
@@ -86,8 +81,7 @@ public class DatabaseWorker {
     }
 
     protected List<Cottage> getCottages() {
-        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night "
-                + "FROM " + COTTAGES_TABLE_NAME;
+        String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Cottage> list = new ArrayList<>();
             while (rs.next()) {
@@ -107,8 +101,7 @@ public class DatabaseWorker {
     }
 
     protected Reservation getReservationById(int id) {
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at "
-                + "FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Reservation r = new Reservation();
@@ -125,8 +118,7 @@ public class DatabaseWorker {
     }
 
     protected List<Reservation> getReservations() {
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at "
-                + "FROM " + RESERVATIONS_TABLE_NAME;
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Reservation> list = new ArrayList<>();
             while (rs.next()) {
@@ -144,8 +136,7 @@ public class DatabaseWorker {
     }
 
     protected Customer getCustomerById(int id) {
-        String sql = "SELECT id, user_id, username, email, phone_number, address "
-                + "FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Customer c = new Customer();
@@ -162,8 +153,7 @@ public class DatabaseWorker {
     }
 
     protected Customer getCustomerByNameLike(String pattern) {
-        String sql = "SELECT id, user_id, username, email, phone_number, address "
-                + "FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
+        String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
         return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
             if (rs.next()) {
                 Customer c = new Customer();
@@ -180,8 +170,7 @@ public class DatabaseWorker {
     }
 
     public Invoice getInvoiceById(int id) {
-        String sql = "SELECT id, price, due_date, status, created_at, reservation_id "
-                + "FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
+        String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
                 Invoice inv = new Invoice();
@@ -197,8 +186,6 @@ public class DatabaseWorker {
             return null;
         });
     }
-
-    // — CRUD insert/update/delete —
 
     public int getCottageCount() {
         String sql = "SELECT COUNT(*) AS cnt FROM " + COTTAGES_TABLE_NAME;
@@ -229,15 +216,12 @@ public class DatabaseWorker {
         );
     }
 
-    // — Optional delegates —
+    public Invoice getInvoiceByIdDelegate(int id) { return getInvoiceById(id); }
+    public Customer getCustomerByIdDelegate(int id) { return getCustomerById(id); }
+    public Customer getCustomerByNameLikeDelegate(String p) { return getCustomerByNameLike(p); }
+    public Cottage getCottageByIdDelegate(int id) { return getCottageById(id); }
+    public Reservation getReservationByIdDelegate(int id) { return getReservationById(id); }
 
-    public Invoice     getInvoiceByIdDelegate(int id)        { return getInvoiceById(id); }
-    public Customer    getCustomerByIdDelegate(int id)       { return getCustomerById(id); }
-    public Customer    getCustomerByNameLikeDelegate(String p){ return getCustomerByNameLike(p); }
-    public Cottage     getCottageByIdDelegate(int id)        { return getCottageById(id); }
-    public Reservation getReservationByIdDelegate(int id)    { return getReservationById(id); }
-
-    /** Return all invoices */
     public List<Invoice> getInvoices() {
         String sql = "SELECT id, price, due_date, status, created_at, reservation_id FROM " + INVOICES_TABLE_NAME;
         return executeQuery(sql, rs -> {
@@ -257,7 +241,6 @@ public class DatabaseWorker {
         });
     }
 
-    /** Return all customers */
     public List<Customer> getCustomers() {
         String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME;
         return executeQuery(sql, rs -> {
@@ -277,9 +260,7 @@ public class DatabaseWorker {
     }
 
     public void updateCottage(Cottage existing) {
-        String sql = "UPDATE " + COTTAGES_TABLE_NAME + " SET "
-                + "name = ?, description = ?, location = ?, capacity = ?, "
-                + "price_per_night = ? WHERE id = ?";
+        String sql = "UPDATE " + COTTAGES_TABLE_NAME + " SET name = ?, description = ?, location = ?, capacity = ?, price_per_night = ? WHERE id = ?";
         executeUpdate(sql, ps -> {
             ps.setString(1, existing.getName());
             ps.setString(2, existing.getDescription());
@@ -290,10 +271,8 @@ public class DatabaseWorker {
         });
     }
 
-
     public void insertCottage(Cottage cottage) {
-        String sql = "INSERT INTO " + COTTAGES_TABLE_NAME + " (name, description, location, capacity, price_per_night, created_at, owner_id) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO " + COTTAGES_TABLE_NAME + " (name, description, location, capacity, price_per_night, created_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         executeUpdate(sql, ps -> {
             ps.setString(1, cottage.getName());
             ps.setString(2, cottage.getDescription());
@@ -304,7 +283,6 @@ public class DatabaseWorker {
             ps.setInt(7, cottage.getOwnerId());
         });
     }
-
 
     public void deleteCottage(int id) {
         String sql = "DELETE FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";

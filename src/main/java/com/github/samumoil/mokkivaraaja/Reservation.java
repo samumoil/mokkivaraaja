@@ -13,8 +13,6 @@ public class Reservation {
         private int customerId;
         private int cottageId;
         private float totalPrice;
-
-        // ← new field for when this reservation was created
         private LocalDateTime createdAt;
 
         public Reservation() {
@@ -107,29 +105,24 @@ public class Reservation {
                 this.totalPrice = totalPrice;
         }
 
-        /** Convenience for UI: get the cottage’s display number */
         public String getCottageNumber() {
                 Cottage c = CottageHandler.getCottageHandler().getCottageById(cottageId);
                 return c != null ? c.getNumber() : "N/A";
         }
 
-        /** Convenience for UI: get the customer’s name */
         public String getCustomerName() {
                 Customer cust = CustomerHandler.getCustomerHandler().getCustomerById(customerId);
                 return cust != null ? cust.getName() : "Unknown";
         }
 
-        /** Convenience for UI: human‐friendly duration */
         public String getDuration() {
                 return nights + " night(s)";
         }
 
-        /** ← Here’s the newly implemented getter */
         public LocalDateTime getCreatedAt() {
                 return createdAt;
         }
 
-        /** ← And its setter, so your DatabaseWorker can populate it */
         public void setCreatedAt(LocalDateTime createdAt) {
                 this.createdAt = createdAt;
         }
