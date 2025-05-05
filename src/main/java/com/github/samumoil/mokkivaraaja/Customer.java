@@ -91,4 +91,18 @@ public class Customer {
         }
         return "";
     }
+
+    public void setCottageId(int i) {
+    }
+
+    public void setFirstName(String part) {
+    }
+
+    public void setLastName(String part) {
+    }
+
+    // Implementing getPhone() method
+    public String getPhone() {
+        return phoneNumber;
+    }
 }

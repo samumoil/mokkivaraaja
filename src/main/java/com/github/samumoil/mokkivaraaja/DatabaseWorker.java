@@ -1,6 +1,8 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -287,5 +289,67 @@ public class DatabaseWorker {
     public void deleteCottage(int id) {
         String sql = "DELETE FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         executeUpdate(sql, ps -> ps.setInt(1, id));
+    }
+
+    public void insertInvoice(Invoice inv) {
+        String sql = "INSERT INTO " + INVOICES_TABLE_NAME + " (price, due_date, status, created_at, reservation_id) VALUES (?, ?, ?, ?, ?)";
+        executeUpdate(sql, ps -> {
+            ps.setFloat(1, (float) inv.getPrice());
+            ps.setDate(2, java.sql.Date.valueOf(inv.getDueDate()));
+            ps.setString(3, inv.getStatus());
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(inv.getCreatedAt()));
+            ps.setInt(5, inv.getReservation().getId());
+        });
+    }
+
+    public void updateInvoice(Invoice inv) {
+        String sql = "UPDATE " + INVOICES_TABLE_NAME + " SET price = ?, due_date = ?, status = ?, created_at = ?, reservation_id = ? WHERE id = ?";
+        executeUpdate(sql, ps -> {
+            ps.setFloat(1, (float) inv.getPrice());
+            ps.setDate(2, java.sql.Date.valueOf(inv.getDueDate()));
+            ps.setString(3, inv.getStatus());
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(inv.getCreatedAt()));
+            ps.setInt(5, inv.getReservation().getId());
+            ps.setInt(6, inv.getId());
+        });
+    }
+
+    public void updateCustomer(Customer customer) {
+        String sql = "UPDATE " + CUSTOMERS_TABLE_NAME + " SET name = ?, phone = ?, email = ? WHERE id = ?";
+        executeUpdate(sql, ps -> {
+            ps.setString(1, customer.getName());
+            ps.setString(2, customer.getPhone());
+            ps.setString(3, customer.getEmail());
+            ps.setInt(4, customer.getId());
+        });
+    }
+
+    public void updateReservation(Reservation reservation) {
+        String sql = "UPDATE " + RESERVATIONS_TABLE_NAME +
+                " SET start_date = ?, nights = ?, end_date = ?, customer_id = ?, cottage_id = ?, total_price = ?, updated_at = ? " +
+                "WHERE id = ?";
+
+        executeUpdate(sql, ps -> {
+            ps.setObject(1, reservation.getStartDate());  // start_date
+            ps.setInt(2, reservation.getNights());        // nights
+            ps.setObject(3, reservation.getEndDate());    // end_date
+            ps.setInt(4, reservation.getCustomerId());    // customer_id
+            ps.setInt(5, reservation.getCottageId());     // cottage_id
+            ps.setFloat(6, reservation.getTotalPrice());  // total_price
+            ps.setObject(7, reservation.getCreatedAt());  // updated_at (assuming you want to track when it was updated)
+            ps.setInt(8, reservation.getId());            // id (to target the specific reservation to update)
+        });
+    }
+
+    // Create a new reservation in the database
+    public void createReservation(Reservation reservation) {
+        String sql = "INSERT INTO " + RESERVATIONS_TABLE_NAME + " (user_id, cottage_id, start_date, end_date, created_at) VALUES (?, ?, ?, ?, ?)";
+        executeUpdate(sql, ps -> {
+            ps.setInt(1, reservation.getUserId());
+            ps.setInt(2, reservation.getCottageId());
+            ps.setDate(3, Date.valueOf(reservation.getStartDate()));
+            ps.setDate(4, Date.valueOf(reservation.getEndDate()));
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now())); // system time
+        });
     }
 }

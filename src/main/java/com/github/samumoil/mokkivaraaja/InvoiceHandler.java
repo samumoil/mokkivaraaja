@@ -6,7 +6,7 @@ import java.util.List;
 
 public class InvoiceHandler {
 
-    // Let's use a "Singleton"
+    // Singleton
     private static InvoiceHandler invoiceHandler;
     private DatabaseWorker databaseWorker;
     private List<Invoice> allInvoices;
@@ -22,6 +22,7 @@ public class InvoiceHandler {
         invoiceHandler = new InvoiceHandler(dbw);
         return invoiceHandler;
     }
+
     public static InvoiceHandler getInvoiceHandler() {
         return invoiceHandler;
     }
@@ -33,10 +34,10 @@ public class InvoiceHandler {
 
     private void updateInvoiceNames() {
         invoiceNames.clear();
-        System.out.println("Loading invoices:");
         for (Invoice invoice : allInvoices) {
-            String toAdd = invoice.getId() + " - " + invoice.getCottage().getName() + " " + invoice.getCreatedAt();
-            System.out.println(toAdd);
+            String toAdd = invoice.getId() + " - "
+                    + invoice.getCottage().getName() + " "
+                    + invoice.getCreatedAt();
             invoiceNames.add(toAdd);
         }
     }
@@ -56,5 +57,18 @@ public class InvoiceHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * If inv.getId() > 0, updates existing invoice; otherwise inserts new.
+     * After DB operation, reloads the local list and updates the UI names.
+     */
+    public void createOrUpdate(Invoice inv) {
+        if (inv.getId() == 0) {
+            databaseWorker.insertInvoice(inv); // new invoice
+        } else {
+            databaseWorker.updateInvoice(inv); // existing invoice
+        }
+        loadInvoicesFromDatabase(); // refresh internal state
     }
 }

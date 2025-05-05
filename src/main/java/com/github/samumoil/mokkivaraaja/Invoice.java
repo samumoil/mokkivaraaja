@@ -143,4 +143,44 @@ public class Invoice {
         public void setPaid(boolean paid) {
                 this.status = paid ? "paid" : "pending";
         }
+
+        public void setRecipient(String recipient) {
+                Customer customer = getCustomer();
+                if (customer != null && recipient != null) {
+                        String[] parts = recipient.trim().split("\\s+", 2);
+                        if (parts.length == 2) {
+                                customer.setFirstName(parts[0]);
+                                customer.setLastName(parts[1]);
+                                CustomerHandler.getCustomerHandler().updateCustomer(customer); // Persist change
+                        }
+                }
+        }
+
+        public void setAddress(String address) {
+                Customer customer = getCustomer();
+                if (customer != null && address != null && !address.trim().isEmpty()) {
+                        customer.setAddress(address.trim());
+                        CustomerHandler.getCustomerHandler().updateCustomer(customer); // Persist change
+                }
+        }
+
+        public void setAmount(double amount) {
+                this.price = (float) amount;
+                InvoiceHandler.getInvoiceHandler().createOrUpdate(this); // Persist change
+        }
+
+        public void setCottageNumber(String cottageNumber) {
+                try {
+                        int cottageId = Integer.parseInt(cottageNumber.trim());
+                        Cottage cottage = CottageHandler.getCottageHandler().getCottageById(cottageId);
+                        Reservation reservation = getReservation();
+                        if (cottage != null && reservation != null) {
+                                reservation.setCottageId(cottageId);
+                                ReservationHandler.getReservationHandler().updateReservation(reservation); // Persist change
+                        }
+                } catch (NumberFormatException e) {
+                        // Optionally log invalid input
+                }
+        }
+
 }

@@ -61,4 +61,12 @@ public class CustomerHandler {
         }
         return null;
     }
+
+    public void createOrUpdate(Customer c) {
+    }
+
+    public void updateCustomer(Customer customer) {
+        databaseWorker.updateCustomer(customer);
+        loadCustomersFromDatabase(); // Refresh internal list
+    }
 }

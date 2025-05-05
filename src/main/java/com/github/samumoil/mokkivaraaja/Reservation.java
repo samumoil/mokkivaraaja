@@ -126,4 +126,21 @@ public class Reservation {
         public void setCreatedAt(LocalDateTime createdAt) {
                 this.createdAt = createdAt;
         }
+
+        public void setCottageNumber(String trim) {
+        }
+
+        public void setCustomerName(String trim) {
+        }
+
+        public void setDuration(int nights) {
+                this.nights = nights;
+                this.endDate = this.startDate.plusDays(nights);
+                this.totalPrice = calculateTotalPrice();
+        }
+
+
+        public int getUserId() {
+                return customerId;
+        }
 }

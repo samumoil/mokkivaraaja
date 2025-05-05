@@ -58,4 +58,27 @@ public class ReservationHandler {
         }
         return null;
     }
+
+    public void createOrUpdate(Reservation r) {
+        // Assuming 'Reservation' has an 'id' property that can be checked
+        if (r.getId() == 0) {
+            // This means it's a new reservation, so create it
+            createReservation(r);
+        } else {
+            // This means the reservation already exists, so update it
+            updateReservation(r);
+        }
+    }
+
+    private void createReservation(Reservation r) {
+        databaseWorker.createReservation(r);
+        loadReservationsFromDatabase();
+    }
+
+
+
+    public void updateReservation(Reservation reservation) {
+        databaseWorker.updateReservation(reservation);
+        loadReservationsFromDatabase();
+    }
 }

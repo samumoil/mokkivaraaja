@@ -89,12 +89,27 @@ public class Cottage {
         return String.valueOf(id);
     }
 
+
+    // Setters for the other methods
     public void setAddress(String address) {
+        this.location = address; // Set the location to the given address
     }
 
     public void setAge(int age) {
+        // Adjust the createdAt date based on the given age (subtract years from the current date)
+        this.createdAt = LocalDateTime.now().minusYears(age);
     }
 
     public void setSize(int size) {
+        this.capacity = size; // Set the capacity to the given size
+    }
+
+    public void setNumber(String trim) {
+        try {
+            this.id = Integer.parseInt(trim); // Parse the string as an integer and set the id
+        } catch (NumberFormatException e) {
+            // Handle invalid input: set id to 0 (or another default value)
+            this.id = 0;
+        }
     }
 }
