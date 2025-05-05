@@ -342,14 +342,17 @@ public class DatabaseWorker {
     }
 
     // Create a new reservation in the database
+    // In DatabaseWorker:
     public void createReservation(Reservation reservation) {
-        String sql = "INSERT INTO " + RESERVATIONS_TABLE_NAME + " (user_id, cottage_id, start_date, end_date, created_at) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO " + RESERVATIONS_TABLE_NAME +
+                " (user_id, cottage_id, start_date, end_date, created_at) " +
+                "VALUES (?, ?, ?, ?, ?)";
         executeUpdate(sql, ps -> {
             ps.setInt(1, reservation.getUserId());
             ps.setInt(2, reservation.getCottageId());
-            ps.setDate(3, Date.valueOf(reservation.getStartDate()));
-            ps.setDate(4, Date.valueOf(reservation.getEndDate()));
-            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now())); // system time
+            ps.setDate(3, java.sql.Date.valueOf(reservation.getStartDate()));
+            ps.setDate(4, java.sql.Date.valueOf(reservation.getEndDate()));
+            ps.setTimestamp(5, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
         });
     }
 }
