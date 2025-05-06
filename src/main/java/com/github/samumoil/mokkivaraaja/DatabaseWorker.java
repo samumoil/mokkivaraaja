@@ -317,6 +317,13 @@ public class DatabaseWorker {
     }
 
     public void updateInvoice(Invoice inv) {
+        if (inv == null) {
+            throw new IllegalArgumentException("Invoice cannot be null.");
+        }
+        if (inv.getReservation() == null) {
+            throw new IllegalArgumentException("Invoice is missing its Reservation. Make sure to set it before updating.");
+        }
+
         String sql = "UPDATE " + INVOICES_TABLE_NAME + " SET price = ?, due_date = ?, status = ?, created_at = ?, reservation_id = ? WHERE id = ?";
         executeUpdate(sql, ps -> {
             ps.setFloat(1, (float) inv.getPrice());
@@ -327,6 +334,7 @@ public class DatabaseWorker {
             ps.setInt(6, inv.getId());
         });
     }
+
 
     public void updateCustomer(Customer c) {
         String sql = "UPDATE " + CUSTOMERS_TABLE_NAME +

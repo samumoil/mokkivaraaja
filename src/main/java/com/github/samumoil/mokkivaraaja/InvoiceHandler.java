@@ -35,9 +35,9 @@ public class InvoiceHandler {
     private void updateInvoiceNames() {
         invoiceNames.clear();
         for (Invoice invoice : allInvoices) {
-            String toAdd = invoice.getId() + " - "
-                    + invoice.getCottage().getName() + " "
-                    + invoice.getCreatedAt();
+            Cottage cottage = invoice.getCottage();
+            String cottageName = (cottage != null) ? cottage.getName() : "Tuntematon mökki";
+            String toAdd = invoice.getId() + " - " + cottageName + " " + invoice.getCreatedAt();
             invoiceNames.add(toAdd);
         }
     }

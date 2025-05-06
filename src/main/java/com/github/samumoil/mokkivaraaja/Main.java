@@ -412,11 +412,25 @@ public class Main extends Application {
             inv.setAddress(laskuOsoite.getText().trim());
             inv.setAmount(Double.parseDouble(laskuSumma.getText()));
             inv.setCottageNumber(laskuMokkiNumero.getText().trim());
+
+            // Create a Reservation and set it to the Invoice
+            Reservation reservation = new Reservation();
+            reservation.setId(42);  // Set a valid Reservation ID
+            inv.setReservation(reservation);  // Ensure Reservation is set
+
+            // Call the createOrUpdate method
             InvoiceHandler.getInvoiceHandler().createOrUpdate(inv);
+
+            // Update the list
             list.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
+
+            // Show success message
             showInfo("Lasku tallennettu onnistuneesti.");
-        } catch (Exception ex) { showError("Laskun tallennus epäonnistui: "+ex.getMessage()); }
+        } catch (Exception ex) {
+            showError("Laskun tallennus epäonnistui: " + ex.getMessage());
+        }
     }
+
     private void saveReport() {
         showInfo("Raportin tallennus ei ole vielä toteutettu.");
     }

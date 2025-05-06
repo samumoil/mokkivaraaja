@@ -86,10 +86,16 @@ public class Invoice {
         }
 
         public Customer getCustomer() {
-                Reservation reservation = ReservationHandler.getReservationHandler().getReservationById(reservationId);
-                Customer customer = CustomerHandler.getCustomerHandler().getCustomerById(reservation.getCustomerId());
-                return customer;
+                Reservation reservation = ReservationHandler.getReservationHandler()
+                        .getReservationById(reservationId);
+
+                if (reservation == null) {
+                        return null;
+                }
+
+                return CustomerHandler.getCustomerHandler().getCustomerById(reservation.getCustomerId());
         }
+
 
         public Cottage getCottage() {
                 Reservation reservation = ReservationHandler.getReservationHandler().getReservationById(reservationId);
