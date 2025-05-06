@@ -143,4 +143,8 @@ public class Reservation {
         public int getUserId() {
                 return customerId;
         }
+
+        public void setUserId(int userId) {
+                this.customerId = userId;
+        }
 }

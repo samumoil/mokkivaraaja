@@ -341,18 +341,30 @@ public class DatabaseWorker {
         });
     }
 
-    // Create a new reservation in the database
-    // In DatabaseWorker:
     public void createReservation(Reservation reservation) {
         String sql = "INSERT INTO " + RESERVATIONS_TABLE_NAME +
                 " (user_id, cottage_id, start_date, end_date, created_at) " +
                 "VALUES (?, ?, ?, ?, ?)";
+
         executeUpdate(sql, ps -> {
+            // Käytetään suoraan LocalDate-oliota, ei LocalDate.parse(...)
+            LocalDate startDate = reservation.getStartDate();
+            LocalDate endDate   = reservation.getEndDate();
+
             ps.setInt(1, reservation.getUserId());
             ps.setInt(2, reservation.getCottageId());
-            ps.setDate(3, java.sql.Date.valueOf(reservation.getStartDate()));
-            ps.setDate(4, java.sql.Date.valueOf(reservation.getEndDate()));
-            ps.setTimestamp(5, java.sql.Timestamp.valueOf(java.time.LocalDateTime.now()));
+            ps.setDate(3, Date.valueOf(startDate));
+            ps.setDate(4, Date.valueOf(endDate));
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
         });
+    }
+
+    public boolean getUserById(int userId) {
+        String sql = "SELECT 1 FROM users WHERE id = ? LIMIT 1";
+        return executeQuery(
+                sql,
+                ps -> ps.setInt(1, userId),
+                rs -> rs.next()
+        );
     }
 }

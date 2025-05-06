@@ -16,8 +16,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Main extends Application {
     private HikariDataSource dataSource;
@@ -331,38 +333,65 @@ public class Main extends Application {
     }
     private void saveReservation() {
         try {
-            // Get and clean up input for 'kesto'
+            // 1) Parsitaan ja validoidaan mökin ID
+            String mokkiTeksti = varausMokkiNumero.getText().trim();
+            int cottageId = Integer.parseInt(mokkiTeksti);
+            if (dbw.getCottageById(cottageId) == null) {
+                showError("Mökkiä ei löytynyt: " + cottageId);
+                return;
+            }
+
+            // 2) Parsitaan ja validoidaan käyttäjän ID
+            String varaajaTeksti = varaaja.getText().trim();
+            int userId = Integer.parseInt(varaajaTeksti);
+            if (!dbw.getUserById(userId)) {
+                showError("Käyttäjää ei löytynyt ID:llä " + userId);
+                return;
+            }
+
+            // 3) Parsitaan kesto (päivinä)
             String kestoInput = kesto.getText().trim();
             if (kestoInput.isEmpty()) {
-                showError("Kesto (duration) cannot be empty.");
-                return;  // Prevent further processing if kesto is empty
+                showError("Kesto ei voi olla tyhjä.");
+                return;
+            }
+            int duration = Integer.parseInt(kestoInput.replaceAll("[^0-9]", ""));
+            if (duration <= 0) {
+                showError("Keston tulee olla positiivinen luku.");
+                return;
             }
 
-            // Clean non-numeric characters from the 'kesto' field
-            String numericKesto = kestoInput.replaceAll("[^0-9]", "");
-            if (numericKesto.isEmpty()) {
-                showError("Please enter a valid number for the duration.");
-                return;  // Prevent further processing if no valid number is found
-            }
+            // 4) Parsitaan alkupäivä ja lasketaan loppupäivä
+            LocalDate startDate = LocalDate.parse(
+                    alkupaiva.getText().trim(),
+                    DateTimeFormatter.ofPattern("dd.MM.yyyy")
+            );
+            LocalDate endDate = startDate.plusDays(duration);
 
-            // Convert the cleaned input to an integer
-            int duration = Integer.parseInt(numericKesto);
-
-            // Create and set the reservation object
+            // 5) Kootaan Reservation-olio
             Reservation r = new Reservation();
-            r.setCottageNumber(varausMokkiNumero.getText().trim());
-            r.setCustomerName(varaaja.getText().trim());
-            r.setDuration(duration);  // Set the cleaned duration
-            r.setStartDate(LocalDate.parse(alkupaiva.getText(), DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+            r.setCottageId(cottageId);
+            r.setUserId(userId);
+            r.setStartDate(startDate);
+            r.setEndDate(endDate);
 
-            // Save the reservation
+            // 6) Tallennus tietokantaan
             ReservationHandler.getReservationHandler().createOrUpdate(r);
-            list.setItems(ReservationHandler.getReservationHandler().getReservationNames());
+
+            // 7) Päivitetään lista‐näkymä ja näytetään vahvistus
+            list.setItems(ReservationHandler
+                    .getReservationHandler()
+                    .getReservationNames());
             showInfo("Varaus tallennettu onnistuneesti.");
-        } catch (Exception ex) {
-            showError("Varauksen tallennus epäonnistui: " + ex.getMessage());
+        }
+        catch (NumberFormatException ex) {
+            showError("Virheellinen numero‐syöte: " + ex.getMessage());
+        }
+        catch (DateTimeParseException ex) {
+            showError("Päivämäärän muoto virheellinen, käytä pp.kk.vvvv-muotoa.");
         }
     }
+
 
     private void saveInvoice() {
         try {
