@@ -44,6 +44,8 @@ public class Main extends Application {
     private TextField AsiakasPuhelin = new TextField();
     private TextField AsiakasOsoite  = new TextField();
     private TextField AsiakkaanMokki = new TextField();
+    private TextField AsiakkaanUserId = new TextField();  // Declare AsiakkaanUserId
+
 
     // Fields for Varaukset
     private TextField varausIdKentta    = new TextField();
@@ -188,6 +190,7 @@ public class Main extends Application {
     }
     private VBox view3() {
         return new VBox(8,
+                new Label("Asiakkaan ID:"), AsiakkaanUserId,
                 new Label("Nimi:"), AsiakasNimi,
                 new Label("Sähköposti:"), AsiakasEmail,
                 new Label("Puhelin:"), AsiakasPuhelin,
@@ -318,19 +321,28 @@ public class Main extends Application {
     }
 
 
-    private void saveCustomer() {
+    public void saveCustomer() {
         try {
             Customer c = new Customer();
             c.setName(AsiakasNimi.getText().trim());
             c.setEmail(AsiakasEmail.getText().trim());
             c.setPhoneNumber(AsiakasPuhelin.getText().trim());
             c.setAddress(AsiakasOsoite.getText().trim());
-            c.setCottageId(Integer.parseInt(AsiakkaanMokki.getText()));
+            c.setUserId(Integer.parseInt(AsiakkaanUserId.getText().trim()));  // Set user_id here
+            c.setCottageId(Integer.parseInt(AsiakkaanMokki.getText().trim()));  // Set cottage_id here
+
+            // Insert or update the customer
             CustomerHandler.getCustomerHandler().createOrUpdate(c);
+
+            // Refresh the list
             list.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
+
             showInfo("Asiakas tallennettu onnistuneesti.");
-        } catch (Exception ex) { showError("Asiakkaan tallennus epäonnistui: "+ex.getMessage()); }
+        } catch (Exception ex) {
+            showError("Asiakkaan tallennus epäonnistui: " + ex.getMessage());
+        }
     }
+
     private void saveReservation() {
         try {
             // 1) Parsitaan ja validoidaan mökin ID
