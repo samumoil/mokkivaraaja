@@ -60,12 +60,9 @@ public class ReservationHandler {
     }
 
     public void createOrUpdate(Reservation r) {
-        // Assuming 'Reservation' has an 'id' property that can be checked
         if (r.getId() == 0) {
-            // This means it's a new reservation, so create it
             createReservation(r);
         } else {
-            // This means the reservation already exists, so update it
             updateReservation(r);
         }
     }

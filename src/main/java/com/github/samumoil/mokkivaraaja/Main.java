@@ -26,48 +26,33 @@ public class Main extends Application {
     private HikariDataSource dataSource;
     private DatabaseWorker dbw;
     private StackPane viewArea;
-
     private ComboBox<String> viewChooser;
     private TextField hakukentta;
     private Button hakuButton;
     private Button tallenna;
     private ListView<String> list = new ListView<>();
-
-    // Fields for Mökit
     private TextField osoitekenta = new TextField();
     private TextField mika        = new TextField();
     private TextField mkoko       = new TextField();
     private TextField mn          = new TextField();
-
-    // Fields for Asiakkaat
     private TextField AsiakasNimi    = new TextField();
     private TextField AsiakasEmail   = new TextField();
     private TextField AsiakasPuhelin = new TextField();
     private TextField AsiakasOsoite  = new TextField();
     private TextField AsiakkaanMokki = new TextField();
     private TextField AsiakkaanUserId = new TextField();  // Declare AsiakkaanUserId
-
-
-    // Fields for Varaukset
     private TextField varausIdKentta    = new TextField();
     private TextField varausMokkiNumero = new TextField();
     private TextField varaaja           = new TextField();
     private TextField kesto             = new TextField();
     private TextField alkupaiva         = new TextField();
     private TextField loppupaiva        = new TextField();
-
-
-    // Fields for Laskut
     private TextField laskuIdField     = new TextField();
     private TextField laskuSaaja       = new TextField();
     private TextField laskuOsoite      = new TextField();
     private TextField laskuSumma       = new TextField();
     private TextField laskuMokkiNumero = new TextField();
-
-    // Fields for Raportit
     private TextField raporttiKentta = new TextField();
-
-    // Uusi/Tyhjenna buttons
     private Button tyhjenna1 = new Button("Tyhjennä");
     private Button uusi1     = new Button("Luo uusi");
     private Button tyhjenna2 = new Button("Tyhjennä");
@@ -78,8 +63,6 @@ public class Main extends Application {
 //    private Button uusi4     = new Button("Luo uusi");
     private Button tyhjenna5 = new Button("Tyhjennä");
 //    private Button uusi5     = new Button("Luo uusi");
-
-
 
     public static void main(String[] args) {
         launch(args);
@@ -108,18 +91,11 @@ public class Main extends Application {
         tallenna = new Button("Tallenna");
         tallenna.setOnAction(e -> doUnifiedSave());
 
-        // After you call `uusi1 = new Button("Luo uusi");`
         tyhjenna1.setOnAction(e -> deleteCottage());
-
-        // In start(), after creating tyhjenna2:
         tyhjenna2.setOnAction(e -> deleteReservation());
-
         tyhjenna3.setOnAction(e -> deleteCustomer());
-
         tyhjenna4.setOnAction(e -> deleteInvoice());
-
-        tyhjenna5.setOnAction(e -> deleteRaportti()); // Clear the report when tyhjenna5 is clicked
-
+        tyhjenna5.setOnAction(e -> deleteRaportti());
         uusi1.setOnAction(event -> createNewCottage());
 
         HBox topBar = new HBox(10,
@@ -195,10 +171,7 @@ public class Main extends Application {
                 return;
             }
 
-            // Perform the delete
             CustomerHandler.getCustomerHandler().deleteCustomer(id);
-
-            // Refresh list + clear form fields
             list.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
             AsiakkaanUserId.clear();
             AsiakasNimi.clear();
@@ -215,7 +188,6 @@ public class Main extends Application {
         }
     }
 
-
     private void deleteReservation() {
         try {
             String rawId = varausIdKentta.getText().trim();
@@ -231,10 +203,8 @@ public class Main extends Application {
                 return;
             }
 
-            // perform delete
             ReservationHandler.getReservationHandler().deleteReservation(id);
 
-            // refresh list + clear fields
             list.setItems(ReservationHandler.getReservationHandler().getReservationNames());
             varausIdKentta.clear();
             varausMokkiNumero.clear();
@@ -255,25 +225,19 @@ public class Main extends Application {
 
     private void deleteCottage() {
         try {
-            // Read the cottage ID from your ID field (mn)
             String rawId = mn.getText().trim();
             if (rawId.isEmpty()) {
                 showError("Anna mökin numero ennen tyhjennystä.");
                 return;
             }
             int id = Integer.parseInt(rawId);
-
-            // Confirm it exists
             Cottage c = CottageHandler.getCottageHandler().getCottageById(id);
             if (c == null) {
                 showError("Mökkiä ei löytynyt ID:llä " + id);
                 return;
             }
 
-            // Perform the delete
             CottageHandler.getCottageHandler().deleteCottage(id);
-
-            // Refresh the list and clear the form
             list.setItems(CottageHandler.getCottageHandler().getCottageNames());
             osoitekenta.clear();
             mika.clear();
@@ -287,7 +251,6 @@ public class Main extends Application {
             showError("Poisto epäonnistui: " + ex.getMessage());
         }
     }
-
 
     private void switchView() {
         switch (viewChooser.getValue()) {
@@ -331,7 +294,6 @@ public class Main extends Application {
         }
     }
 
-    // View Builders
     private VBox view1() {
         return new VBox(8,
                 new Label("Mökin osoite:"), osoitekenta,
@@ -379,7 +341,6 @@ public class Main extends Application {
         );
     }
 
-    // Search Helpers
     private void searchAndFillCottageDetails(String id) {
         try {
             Cottage c = dbw.getCottageById(Integer.parseInt(id));
@@ -433,51 +394,36 @@ public class Main extends Application {
             showError("Virheellinen lasku-ID: "+id);
         }
     }
-
-
     private void saveCottage() {
         try {
-            // Read inputs from the text fields
-            String address = osoitekenta.getText().trim(); // Address and name are the same field
-            String name = osoitekenta.getText().trim();  // Use address as name as well, based on your setup
-            String sizeRaw = mkoko.getText().trim();  // Size input
-            String cottageNumberRaw = mn.getText().trim(); // Cottage number (ID)
+            String address = osoitekenta.getText().trim();
+            String name = osoitekenta.getText().trim();
+            String sizeRaw = mkoko.getText().trim();
+            String cottageNumberRaw = mn.getText().trim();
 
-            // Validate inputs
             if (address.isEmpty() || sizeRaw.isEmpty() || cottageNumberRaw.isEmpty()) {
                 showError("Kaikki kentät täytyy täyttää.");
                 return;
             }
 
-            // Parse the cottage number and size to integers
             int cottageNumber = Integer.parseInt(cottageNumberRaw);
-            int size = Integer.parseInt(sizeRaw);  // Parse the size to an integer
+            int size = Integer.parseInt(sizeRaw);
 
-            // Create a new Cottage object using the constructor
             Cottage newCottage = new Cottage();
-            newCottage.setId(cottageNumber);   // Assuming the cottage ID is passed here
-            newCottage.setName(name);  // Using address as name
-            newCottage.setLocation(address);  // Assuming address is location
-            newCottage.setDescription("N/A");  // Optional: add description logic
-            newCottage.setOwnerId(1); // Set owner ID (assuming 1 as default or set according to your logic)
-            newCottage.setPricePerNight(100.0f); // Assuming a default price, adjust accordingly
+            newCottage.setId(cottageNumber);
+            newCottage.setName(name);
+            newCottage.setLocation(address);
+            newCottage.setDescription("N/A");
+            newCottage.setOwnerId(1);
+            newCottage.setPricePerNight(100.0f);
             newCottage.setCreatedAt(LocalDateTime.now());
-
-            // Set size (age is not provided in your setup, so this will be size for now)
             newCottage.setSize(size);
-
-            // Directly insert the cottage into the database
             dbw.insertCottage(newCottage);
-
-            // Reload the cottages to update the list
             list.setItems(CottageHandler.getCottageHandler().getCottageNames());
-
-            // Clear the input fields
             osoitekenta.clear();
             mkoko.clear();
             mn.clear();
 
-            // Show success message
             showInfo("Mökki luotu onnistuneesti.");
         } catch (NumberFormatException ex) {
             showError("Virheellinen mökin numero tai koko: " + ex.getMessage());
@@ -486,7 +432,6 @@ public class Main extends Application {
         }
     }
 
-
     public void saveCustomer() {
         try {
             Customer c = new Customer();
@@ -494,13 +439,9 @@ public class Main extends Application {
             c.setEmail(AsiakasEmail.getText().trim());
             c.setPhoneNumber(AsiakasPuhelin.getText().trim());
             c.setAddress(AsiakasOsoite.getText().trim());
-            c.setUserId(Integer.parseInt(AsiakkaanUserId.getText().trim()));  // Set user_id here
-            c.setCottageId(Integer.parseInt(AsiakkaanMokki.getText().trim()));  // Set cottage_id here
-
-            // Insert or update the customer
+            c.setUserId(Integer.parseInt(AsiakkaanUserId.getText().trim()));
+            c.setCottageId(Integer.parseInt(AsiakkaanMokki.getText().trim()));
             CustomerHandler.getCustomerHandler().createOrUpdate(c);
-
-            // Refresh the list
             list.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
 
             showInfo("Asiakas tallennettu onnistuneesti.");
@@ -511,7 +452,6 @@ public class Main extends Application {
 
     private void saveReservation() {
         try {
-            // 1) Parsitaan ja validoidaan mökin ID
             String mokkiTeksti = varausMokkiNumero.getText().trim();
             int cottageId = Integer.parseInt(mokkiTeksti);
             if (dbw.getCottageById(cottageId) == null) {
@@ -519,7 +459,6 @@ public class Main extends Application {
                 return;
             }
 
-            // 2) Parsitaan ja validoidaan käyttäjän ID
             String varaajaTeksti = varaaja.getText().trim();
             int userId = Integer.parseInt(varaajaTeksti);
             if (!dbw.getUserById(userId)) {
@@ -527,7 +466,6 @@ public class Main extends Application {
                 return;
             }
 
-            // 3) Parsitaan kesto (päivinä)
             String kestoInput = kesto.getText().trim();
             if (kestoInput.isEmpty()) {
                 showError("Kesto ei voi olla tyhjä.");
@@ -539,24 +477,20 @@ public class Main extends Application {
                 return;
             }
 
-            // 4) Parsitaan alkupäivä ja lasketaan loppupäivä
             LocalDate startDate = LocalDate.parse(
                     alkupaiva.getText().trim(),
                     DateTimeFormatter.ofPattern("dd.MM.yyyy")
             );
             LocalDate endDate = startDate.plusDays(duration);
 
-            // 5) Kootaan Reservation-olio
             Reservation r = new Reservation();
             r.setCottageId(cottageId);
             r.setUserId(userId);
             r.setStartDate(startDate);
             r.setEndDate(endDate);
 
-            // 6) Tallennus tietokantaan
             ReservationHandler.getReservationHandler().createOrUpdate(r);
 
-            // 7) Päivitetään lista‐näkymä ja näytetään vahvistus
             list.setItems(ReservationHandler
                     .getReservationHandler()
                     .getReservationNames());
@@ -573,14 +507,11 @@ public class Main extends Application {
 
     private void saveInvoice() {
         try {
-            // 1) Read the cottage number from the form
             String cottageNum = laskuMokkiNumero.getText().trim();
             if (cottageNum.isEmpty()) {
                 showError("Anna mökin numero.");
                 return;
             }
-
-            // 2) Find a matching reservation automatically
             Reservation found = null;
             for (Reservation r : ReservationHandler.getReservationHandler().getAllReservations()) {
                 if (r.getCottageNumber().equals(cottageNum)) {
@@ -593,27 +524,17 @@ public class Main extends Application {
                 showError("Varausta ei löytynyt mökin numerolla " + cottageNum);
                 return;
             }
-
-            // 3) Build the Invoice, attach the found Reservation
             Invoice inv = new Invoice();
             inv.setReservation(found);
-
-            // 4) Recipient & Address (pulled from the customer on the reservation)
             inv.setRecipient(inv.getCustomer().getName());
             inv.setAddress(inv.getCustomer().getAddress());
-
-            // 5) Parse and set the amount safely (strip €, replace comma → dot)
             String rawAmount = laskuSumma.getText()
                     .replace("€","")
                     .replace(",",".")
                     .trim();
             double amount = Double.parseDouble(rawAmount);
             inv.setAmount(amount);
-
-            // 6) Persist only by insertion (never updates existing)
             InvoiceHandler.getInvoiceHandler().createOrUpdate(inv);
-
-            // 7) Refresh the UI
             list.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
             showInfo("Lasku tallennettu onnistuneesti.");
         }
@@ -626,10 +547,7 @@ public class Main extends Application {
     }
 
     private void saveReport() {
-        // 1) Fetch the aggregated data from the DB
         ReportData rd = dbw.getReportData();
-
-        // 2) Build a human-readable report string
         String report =
                 "Raportti:\n" +
                         "  Mökkien määrä: "    + rd.getCottageCount()     + "\n" +
@@ -637,17 +555,12 @@ public class Main extends Application {
                         "  Varausten määrä: "   + rd.getReservationCount()+ "\n" +
                         "  Laskujen yhteissumma: " + String.format("%.2f €", rd.getTotalInvoiceSum());
 
-        // 3a) Show it in your raporttiKentta TextField:
         raporttiKentta.setText(report);
     }
 
     private void deleteRaportti() {
-        // Clear the raporttiKentta (TextField or TextArea)
         raporttiKentta.clear();
     }
-
-
-
 
     private HikariDataSource createDataSource() {
         HikariConfig cfg = new HikariConfig();
@@ -663,47 +576,29 @@ public class Main extends Application {
     }
     private void createNewCottage() {
         try {
-            // Read inputs from the text fields
             String address = osoitekenta.getText().trim();
             String name = mika.getText().trim();
             String size = mkoko.getText().trim();
             String cottageNumberRaw = mn.getText().trim();
 
-            // Validate inputs
             if (address.isEmpty() || name.isEmpty() || size.isEmpty() || cottageNumberRaw.isEmpty()) {
                 showError("Kaikki kentät täytyy täyttää.");
                 return;
             }
 
-            // Parse the cottage number to an integer
             int cottageNumber = Integer.parseInt(cottageNumberRaw);
-
-            // Create a new Cottage object using the default constructor
             Cottage newCottage = new Cottage();
-
-            // Set the values using the inputs
             newCottage.setId(cottageNumber); // assuming there's a setter for 'id'
             newCottage.setName(name);
             newCottage.setLocation(address);
             newCottage.setDescription(size);
-
-            // Optionally, set other fields if needed:
-            // newCottage.setOwnerId(ownerId); // if you want to set an owner ID
-            // newCottage.setPricePerNight(price); // if you want to set a price per night
-
-            // Call the appropriate handler method to save the new cottage
             CottageHandler.getCottageHandler().addCottage(newCottage);
-
-            // Update the list with the newly added cottage
             list.setItems(CottageHandler.getCottageHandler().getCottageNames());
-
-            // Clear the input fields
             osoitekenta.clear();
             mika.clear();
             mkoko.clear();
             mn.clear();
 
-            // Show success message
             showInfo("Mökki luotu onnistuneesti.");
         } catch (NumberFormatException ex) {
             showError("Virheellinen mökin numero: " + ex.getMessage());
@@ -711,7 +606,6 @@ public class Main extends Application {
             showError("Mökin luominen epäonnistui: " + ex.getMessage());
         }
     }
-
 
     @Override
     public void stop() throws Exception {
