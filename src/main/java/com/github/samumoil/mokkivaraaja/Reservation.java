@@ -1,6 +1,7 @@
 package com.github.samumoil.mokkivaraaja;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class Reservation {
@@ -12,6 +13,7 @@ public class Reservation {
         private int customerId;
         private int cottageId;
         private float totalPrice;
+        private LocalDateTime createdAt;
 
         public Reservation() {
                 this.id = 0;
@@ -21,6 +23,7 @@ public class Reservation {
                 this.customerId = 0;
                 this.cottageId = 0;
                 this.totalPrice = 0f;
+                this.createdAt = LocalDateTime.now();
         }
 
         public Reservation(int id, LocalDate startDate, int nights, int customerId, int cottageId) {
@@ -31,6 +34,7 @@ public class Reservation {
                 this.customerId = customerId;
                 this.cottageId = cottageId;
                 this.totalPrice = calculateTotalPrice();
+                this.createdAt = LocalDateTime.now();
         }
 
         private float calculateTotalPrice() {
@@ -113,5 +117,13 @@ public class Reservation {
 
         public String getDuration() {
                 return nights + " night(s)";
+        }
+
+        public LocalDateTime getCreatedAt() {
+                return createdAt;
+        }
+
+        public void setCreatedAt(LocalDateTime createdAt) {
+                this.createdAt = createdAt;
         }
 }

@@ -8,6 +8,8 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Optional;
 
+import com.github.samumoil.mokkivaraaja.ReportData;
+
 @FunctionalInterface
 interface ResultSetHandler<T> {
     T handle(ResultSet rs) throws SQLException;
@@ -24,7 +26,6 @@ public class DatabaseWorker {
     private static final String RESERVATIONS_TABLE_NAME = "reservations";
     private static final String CUSTOMERS_TABLE_NAME = "asiakas";
     private static final String INVOICES_TABLE_NAME = "invoices";
-    private static final String REPORTS_TABLE_NAME = "reports";
 
     public DatabaseWorker(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -40,12 +41,12 @@ public class DatabaseWorker {
      * @throws RuntimeException if an {@code SQLException} is encountered during the execution of the query
      */
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
-        try (Connection dbc = dataSource.getConnection();
-             PreparedStatement st = dbc.prepareStatement(sql);
-             ResultSet rs = st.executeQuery()) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             return handler.handle(rs);
-        } catch (SQLException e) {
-            throw new RuntimeException("Query execution failed: " + e.getMessage(), e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -66,8 +67,28 @@ public class DatabaseWorker {
             try (ResultSet rs = st.executeQuery()) {
                 return handler.handle(rs);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Query execution with parameters failed: " + e.getMessage(), e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * Executes the given SQL update query using the provided {@code PreparedStatementSetter}.
+     * This method sets the parameters in the prepared statement, executes the update,
+     * and returns the number of affected rows.
+     *
+     * @param sql    the SQL update query to be executed
+     * @param setter an implementation of {@code PreparedStatementSetter} to set parameters in the statement
+     * @return the number of rows affected by the update
+     * @throws RuntimeException if an {@code SQLException} occurs during the execution
+     */
+    private int executeUpdate(String sql, PreparedStatementSetter setter) {
+        try (Connection c = dataSource.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            setter.setParameters(ps);
+            return ps.executeUpdate();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -142,8 +163,8 @@ public class DatabaseWorker {
     }
 
     protected List<Reservation> getReservations() {
-        //language=SQL
-        String sql = "SELECT id, start_date, end_date, user_id, cottage_id FROM " + RESERVATIONS_TABLE_NAME;
+        String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME;
+
         return executeQuery(sql, rs -> {
             List<Reservation> reservations = new ArrayList<>();
             while (rs.next()) {
@@ -283,5 +304,94 @@ public class DatabaseWorker {
             }
             return Optional.empty();
         });
+    }
+
+    public int getCottageCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + COTTAGES_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public int getCustomerCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + CUSTOMERS_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public int getReservationCount() {
+        String sql = "SELECT COUNT(*) AS cnt FROM " + RESERVATIONS_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getInt("cnt") : 0);
+    }
+
+    public double getTotalInvoiceSum() {
+        String sql = "SELECT COALESCE(SUM(price),0) AS total FROM " + INVOICES_TABLE_NAME;
+        return executeQuery(sql, rs -> rs.next() ? rs.getDouble("total") : 0.0);
+    }
+
+    public ReportData getReportData() {
+        return new ReportData(
+                 getCottageCount(),
+                 getCustomerCount(),
+                 getReservationCount(),
+                 getTotalInvoiceSum()
+        );
+    }
+
+    /**
+     * Updates an existing cottage record in the database.
+     * The cottage is updated with the attributes of the provided {@code Cottage} object.
+     *
+     * @param existing the {@code Cottage} object containing updated details such as name, description,
+     *                 location, capacity, and price per night. The {@code id} property of the provided
+     *                 cottage is used to identify the record to update.
+     * @return {@code true} if the update was successful (i.e., at least one row was affected),
+     * {@code false} otherwise.
+     */
+    public boolean updateCottage(Cottage existing) {
+        //language=SQL
+        String sql = "UPDATE " + COTTAGES_TABLE_NAME + " SET name = ?, description = ?, location = ?, capacity = ?, price_per_night = ? WHERE id = ?";
+        int rowsAffected = executeUpdate(sql, ps -> {
+            ps.setString(1, existing.getName());
+            ps.setString(2, existing.getDescription());
+            ps.setString(3, existing.getLocation());
+            ps.setInt(4, existing.getCapacity());
+            ps.setFloat(5, existing.getPricePerNight());
+            ps.setInt(6, existing.getId());
+        });
+        return rowsAffected > 0;
+    }
+
+    /**
+     * Inserts a new cottage record into the database.
+     *
+     * @param cottage the Cottage object containing the details to be inserted, 
+     *                including its name, description, location, capacity, price per night,
+     *                creation timestamp, and owner ID
+     * @return true if the insertion was successful and at least one row was affected,
+     *         false otherwise
+     */
+    public boolean insertCottage(Cottage cottage) {
+        String sql = "INSERT INTO " + COTTAGES_TABLE_NAME + " (name, description, location, capacity, price_per_night, created_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        int rowsAffected = executeUpdate(sql, ps -> {
+            ps.setString(1, cottage.getName());
+            ps.setString(2, cottage.getDescription());
+            ps.setString(3, cottage.getLocation());
+            ps.setInt(4, cottage.getCapacity());
+            ps.setFloat(5, cottage.getPricePerNight());
+            ps.setTimestamp(6, Timestamp.valueOf(cottage.getCreatedAt()));
+            ps.setInt(7, cottage.getOwnerId());
+        });
+        return rowsAffected > 0;
+    }
+
+    /**
+     * Deletes a cottage record from the database based on the provided unique identifier.
+     *
+     * @param id the unique identifier of the cottage to be deleted
+     * @return {@code true} if the deletion was successful (i.e., at least one row was affected),
+     *         {@code false} otherwise
+     */
+    public boolean deleteCottage(int id) {
+        String sql = "DELETE FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
+        int rowsAffected = executeUpdate(sql, ps -> ps.setInt(1, id));
+        return rowsAffected > 0;
     }
 }
