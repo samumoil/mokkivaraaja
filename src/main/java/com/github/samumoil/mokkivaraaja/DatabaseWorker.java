@@ -8,8 +8,6 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Optional;
 
-import com.github.samumoil.mokkivaraaja.ReportData;
-
 @FunctionalInterface
 interface ResultSetHandler<T> {
     T handle(ResultSet rs) throws SQLException;
@@ -26,6 +24,7 @@ public class DatabaseWorker {
     private static final String RESERVATIONS_TABLE_NAME = "reservations";
     private static final String CUSTOMERS_TABLE_NAME = "asiakas";
     private static final String INVOICES_TABLE_NAME = "invoices";
+    private static final String REPORTS_TABLE_NAME = "reports";
 
     public DatabaseWorker(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -41,12 +40,12 @@ public class DatabaseWorker {
      * @throws RuntimeException if an {@code SQLException} is encountered during the execution of the query
      */
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
-        try (Connection c = dataSource.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection dbc = dataSource.getConnection();
+             PreparedStatement st = dbc.prepareStatement(sql);
+             ResultSet rs = st.executeQuery()) {
             return handler.handle(rs);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException e) {
+            throw new RuntimeException("Query execution failed: " + e.getMessage(), e);
         }
     }
 
@@ -67,8 +66,8 @@ public class DatabaseWorker {
             try (ResultSet rs = st.executeQuery()) {
                 return handler.handle(rs);
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException e) {
+            throw new RuntimeException("Query execution with parameters failed: " + e.getMessage(), e);
         }
     }
 
@@ -87,8 +86,8 @@ public class DatabaseWorker {
              PreparedStatement ps = c.prepareStatement(sql)) {
             setter.setParameters(ps);
             return ps.executeUpdate();
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        } catch (SQLException e) {
+            throw new RuntimeException("Update execution failed: " + e.getMessage(), e);
         }
     }
 
@@ -241,7 +240,14 @@ public class DatabaseWorker {
         });
     }
 
-    protected Optional<Customer> getCustomerByNameLike(String pattern) {
+    /**
+     * Retrieves a customer whose username matches the specified pattern from the customers table.
+     * The pattern uses SQL's LIKE operator for partial matching and retrieves at most one customer.
+     *
+     * @param pattern the pattern to match against the username in the database
+     * @return an Optional containing the Customer if a match is found, or an empty Optional otherwise
+     */
+    protected Optional<Customer> getCustomerByName(String pattern) {
         //language=SQL
         String sql = "SELECT id, username, email, phone_number, address FROM " +
                  CUSTOMERS_TABLE_NAME +
@@ -326,14 +332,14 @@ public class DatabaseWorker {
         return executeQuery(sql, rs -> rs.next() ? rs.getDouble("total") : 0.0);
     }
 
-    public ReportData getReportData() {
-        return new ReportData(
-                 getCottageCount(),
-                 getCustomerCount(),
-                 getReservationCount(),
-                 getTotalInvoiceSum()
-        );
-    }
+    //public ReportData getReportData() {
+    //    return new ReportData(
+    //             getCottageCount(),
+    //             getCustomerCount(),
+    //             getReservationCount(),
+    //             getTotalInvoiceSum()
+    //    );
+    //}
 
     /**
      * Updates an existing cottage record in the database.
@@ -362,11 +368,11 @@ public class DatabaseWorker {
     /**
      * Inserts a new cottage record into the database.
      *
-     * @param cottage the Cottage object containing the details to be inserted, 
+     * @param cottage the Cottage object containing the details to be inserted,
      *                including its name, description, location, capacity, price per night,
      *                creation timestamp, and owner ID
      * @return true if the insertion was successful and at least one row was affected,
-     *         false otherwise
+     * false otherwise
      */
     public boolean insertCottage(Cottage cottage) {
         String sql = "INSERT INTO " + COTTAGES_TABLE_NAME + " (name, description, location, capacity, price_per_night, created_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -387,7 +393,7 @@ public class DatabaseWorker {
      *
      * @param id the unique identifier of the cottage to be deleted
      * @return {@code true} if the deletion was successful (i.e., at least one row was affected),
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
     public boolean deleteCottage(int id) {
         String sql = "DELETE FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
