@@ -473,13 +473,7 @@ public class Main extends Application {
 
         // 3a) Show it in your raporttiKentta TextField:
         raporttiKentta.setText(report);
-
-        // —or—
-        // 3b) If you’d rather pop it up in an alert, swap the two lines:
-        // showInfo(report);
-        // raporttiKentta.clear();
     }
-
 
     private HikariDataSource createDataSource() {
         HikariConfig cfg = new HikariConfig();
