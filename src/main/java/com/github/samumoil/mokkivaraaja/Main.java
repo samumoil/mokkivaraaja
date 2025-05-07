@@ -145,7 +145,7 @@ public class Main extends Application {
                 String idOnly = raw.replaceAll("^\\s*(\\d+).*$", "$1");
 
                 Optional<Customer> optionalCustomer = dbw.getCustomerById(Integer.parseInt(idOnly))
-                         .or(() -> dbw.getCustomerByNameLike(idOnly));
+                         .or(() -> dbw.getCustomerByName("%" + raw + "%"));
 
                 optionalCustomer.ifPresentOrElse(customer -> {
                     AsiakasNimi.setText(customer.getName());
