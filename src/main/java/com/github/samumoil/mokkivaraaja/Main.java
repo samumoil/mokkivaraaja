@@ -54,6 +54,8 @@ public class Main extends Application {
     private TextField varaaja           = new TextField();
     private TextField kesto             = new TextField();
     private TextField alkupaiva         = new TextField();
+    private TextField loppupaiva        = new TextField();
+
 
     // Fields for Laskut
     private TextField laskuIdField     = new TextField();
@@ -76,6 +78,8 @@ public class Main extends Application {
 //    private Button uusi4     = new Button("Luo uusi");
     private Button tyhjenna5 = new Button("Tyhjennä");
 //    private Button uusi5     = new Button("Luo uusi");
+
+
 
     public static void main(String[] args) {
         launch(args);
@@ -311,7 +315,7 @@ public class Main extends Application {
         switch (viewChooser.getValue()) {
             case "Mökit":      searchAndFillCottageDetails(raw);  break;
             case "Asiakkaat":  searchAndFillCustomerDetails(raw); break;
-            case "Varaukset":  searchAndFillReservationDetails(raw);break;
+            case "Varaukset":  searchAndFillReservationDetails(raw); break;
             case "Laskut":     searchAndFillLaskuDetails(raw);      break;
             case "Raportit":   showError("Raporttitoiminto ei ole vielä toteutettu"); break;
         }
@@ -344,7 +348,7 @@ public class Main extends Application {
                 new Label("Varaaja:"), varaaja,
                 new Label("Kesto:"), kesto,
                 new Label("Alkupäivä:"), alkupaiva,
-                tallenna, tyhjenna2
+                new Label("Loppupäivä:"), loppupaiva, tallenna, tyhjenna2
         );
     }
     private VBox view3() {
@@ -410,6 +414,7 @@ public class Main extends Application {
                 varaaja.setText(r.getCustomerName());
                 kesto.setText(String.valueOf(r.getDuration()));
                 alkupaiva.setText(r.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+                loppupaiva.setText(r.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
             } else showError("Varausta ei löytynyt: "+id);
         } catch (NumberFormatException ex) {
             showError("Virheellinen varaus-ID: "+id);
