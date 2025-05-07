@@ -5,8 +5,6 @@ import javafx.collections.ObservableList;
 import java.util.List;
 
 public class ReservationHandler {
-
-    // Let's use a "Singleton"
     private static ReservationHandler reservationHandler;
     private DatabaseWorker databaseWorker;
     private List<Reservation> allReservations;

@@ -15,7 +15,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

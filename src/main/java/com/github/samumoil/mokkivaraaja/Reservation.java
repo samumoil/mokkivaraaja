@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class Reservation {
-
         private int id;
         private LocalDate startDate;
         private int nights;
