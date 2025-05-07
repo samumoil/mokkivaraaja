@@ -95,4 +95,26 @@ public class CottageHandler {
         // Return a specific default owner ID (e.g., the first user in your database)
         return 1;  // Assuming the user with id = 1 is a default user
     }
+
+    public void deleteCottage(int id) {
+        databaseWorker.deleteCottage(id);
+        loadCottagesFromDatabase();
+    }
+
+    public void addCottage(Cottage newCottage) {
+        if (newCottage == null) {
+            throw new IllegalArgumentException("Cottage cannot be null.");
+        }
+
+        // Ensure the cottage has a valid owner ID
+        if (newCottage.getOwnerId() == 0) {
+            newCottage.setOwnerId(getDefaultOwnerId());
+        }
+
+        // Insert the cottage into the database
+        databaseWorker.insertCottage(newCottage);
+
+        // Reload cottages to update internal state and observable list
+        loadCottagesFromDatabase();
+    }
 }

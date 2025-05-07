@@ -76,6 +76,10 @@ public class CustomerHandler {
         }
     }
 
+    public void deleteCustomer(int id) {
+        databaseWorker.deleteCustomer(id);
+        loadCustomersFromDatabase();
+    }
 
     public void updateCustomer(Customer customer) {
         databaseWorker.updateCustomer(customer);

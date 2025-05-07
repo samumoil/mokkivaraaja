@@ -59,6 +59,12 @@ public class InvoiceHandler {
         return null;
     }
 
+    public void deleteInvoice(int id) {
+        databaseWorker.deleteInvoice(id);
+        loadInvoicesFromDatabase();
+    }
+
+
     /**
      * If inv.getId() > 0, updates existing invoice; otherwise inserts new.
      * After DB operation, reloads the local list and updates the UI names.

@@ -47,9 +47,6 @@ public class Cottage {
         this.pricePerNight = pricePerNight;
     }
 
-    public Cottage(String address, int age, int size, int id) {
-    }
-
     public int getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }

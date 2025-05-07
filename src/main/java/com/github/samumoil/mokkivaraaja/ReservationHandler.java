@@ -75,6 +75,10 @@ public class ReservationHandler {
         loadReservationsFromDatabase();
     }
 
+    public void deleteReservation(int id) {
+        databaseWorker.deleteReservation(id);
+        loadReservationsFromDatabase();
+    }
 
 
     public void updateReservation(Reservation reservation) {

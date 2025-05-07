@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -68,13 +69,13 @@ public class Main extends Application {
     private Button tyhjenna1 = new Button("Tyhjennä");
     private Button uusi1     = new Button("Luo uusi");
     private Button tyhjenna2 = new Button("Tyhjennä");
-    private Button uusi2     = new Button("Luo uusi");
+//    private Button uusi2     = new Button("Luo uusi");
     private Button tyhjenna3 = new Button("Tyhjennä");
-    private Button uusi3     = new Button("Luo uusi");
+//    private Button uusi3     = new Button("Luo uusi");
     private Button tyhjenna4 = new Button("Tyhjennä");
-    private Button uusi4     = new Button("Luo uusi");
+//    private Button uusi4     = new Button("Luo uusi");
     private Button tyhjenna5 = new Button("Tyhjennä");
-    private Button uusi5     = new Button("Luo uusi");
+//    private Button uusi5     = new Button("Luo uusi");
 
     public static void main(String[] args) {
         launch(args);
@@ -103,6 +104,20 @@ public class Main extends Application {
         tallenna = new Button("Tallenna");
         tallenna.setOnAction(e -> doUnifiedSave());
 
+        // After you call `uusi1 = new Button("Luo uusi");`
+        tyhjenna1.setOnAction(e -> deleteCottage());
+
+        // In start(), after creating tyhjenna2:
+        tyhjenna2.setOnAction(e -> deleteReservation());
+
+        tyhjenna3.setOnAction(e -> deleteCustomer());
+
+        tyhjenna4.setOnAction(e -> deleteInvoice());
+
+        tyhjenna5.setOnAction(e -> deleteRaportti()); // Clear the report when tyhjenna5 is clicked
+
+        uusi1.setOnAction(event -> createNewCottage());
+
         HBox topBar = new HBox(10,
                 new Label("Valitse näkymä:"), viewChooser,
                 new Label("Haku:"), hakukentta, hakuButton,
@@ -125,6 +140,150 @@ public class Main extends Application {
         primaryStage.setTitle("Mökki Management");
         primaryStage.show();
     }
+
+    private void deleteInvoice() {
+        try {
+            String rawId = laskuIdField.getText().trim();
+            if (rawId.isEmpty()) {
+                showError("Anna laskun ID ennen tyhjennystä.");
+                return;
+            }
+
+            int id = Integer.parseInt(rawId);
+            Invoice invoice = InvoiceHandler.getInvoiceHandler().getInvoiceById(id);
+
+            if (invoice == null) {
+                showError("Laskua ei löytynyt ID:llä " + id);
+                return;
+            }
+
+            InvoiceHandler.getInvoiceHandler().deleteInvoice(id);
+
+            list.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
+
+            laskuIdField.clear();
+            laskuSumma.clear();
+            laskuOsoite.clear();
+            laskuSaaja.clear();
+            laskuMokkiNumero.clear();
+
+            showInfo("Lasku ID " + id + " poistettu.");
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen laskun ID: " + ex.getMessage());
+        } catch (Exception ex) {
+            showError("Laskun poisto epäonnistui: " + ex.getMessage());
+        }
+    }
+
+
+    private void deleteCustomer() {
+        try {
+            String rawId = AsiakkaanUserId.getText().trim();
+            if (rawId.isEmpty()) {
+                showError("Anna Asiakkaan ID ennen tyhjennystä.");
+                return;
+            }
+            int id = Integer.parseInt(rawId);
+
+            Customer c = CustomerHandler.getCustomerHandler().getCustomerById(id);
+            if (c == null) {
+                showError("Asiakasta ei löytynyt ID:llä " + id);
+                return;
+            }
+
+            // Perform the delete
+            CustomerHandler.getCustomerHandler().deleteCustomer(id);
+
+            // Refresh list + clear form fields
+            list.setItems(CustomerHandler.getCustomerHandler().getCustomerNames());
+            AsiakkaanUserId.clear();
+            AsiakasNimi.clear();
+            AsiakasEmail.clear();
+            AsiakasPuhelin.clear();
+            AsiakasOsoite.clear();
+            AsiakkaanMokki.clear();
+
+            showInfo("Asiakas ID " + id + " poistettu.");
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen Asiakkaan ID: " + ex.getMessage());
+        } catch (Exception ex) {
+            showError("Asiakkaan poisto epäonnistui: " + ex.getMessage());
+        }
+    }
+
+
+    private void deleteReservation() {
+        try {
+            String rawId = varausIdKentta.getText().trim();
+            if (rawId.isEmpty()) {
+                showError("Anna varaus-ID ennen tyhjennystä.");
+                return;
+            }
+            int id = Integer.parseInt(rawId);
+
+            Reservation r = ReservationHandler.getReservationHandler().getReservationById(id);
+            if (r == null) {
+                showError("Varausta ei löytynyt ID:llä " + id);
+                return;
+            }
+
+            // perform delete
+            ReservationHandler.getReservationHandler().deleteReservation(id);
+
+            // refresh list + clear fields
+            list.setItems(ReservationHandler.getReservationHandler().getReservationNames());
+            varausIdKentta.clear();
+            varausMokkiNumero.clear();
+            varaaja.clear();
+            kesto.clear();
+            alkupaiva.clear();
+
+            showInfo("Varaus ID " + id + " poistettu.");
+        }
+        catch (NumberFormatException ex) {
+            showError("Virheellinen varaus-ID: " + ex.getMessage());
+        }
+        catch (Exception ex) {
+            showError("Varausen poisto epäonnistui: " + ex.getMessage());
+        }
+    }
+
+
+    private void deleteCottage() {
+        try {
+            // Read the cottage ID from your ID field (mn)
+            String rawId = mn.getText().trim();
+            if (rawId.isEmpty()) {
+                showError("Anna mökin numero ennen tyhjennystä.");
+                return;
+            }
+            int id = Integer.parseInt(rawId);
+
+            // Confirm it exists
+            Cottage c = CottageHandler.getCottageHandler().getCottageById(id);
+            if (c == null) {
+                showError("Mökkiä ei löytynyt ID:llä " + id);
+                return;
+            }
+
+            // Perform the delete
+            CottageHandler.getCottageHandler().deleteCottage(id);
+
+            // Refresh the list and clear the form
+            list.setItems(CottageHandler.getCottageHandler().getCottageNames());
+            osoitekenta.clear();
+            mika.clear();
+            mkoko.clear();
+            mn.clear();
+
+            showInfo("Mökki ID " + id + " poistettu.");
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen mökin numero: " + ex.getMessage());
+        } catch (Exception ex) {
+            showError("Poisto epäonnistui: " + ex.getMessage());
+        }
+    }
+
 
     private void switchView() {
         switch (viewChooser.getValue()) {
@@ -185,7 +344,7 @@ public class Main extends Application {
                 new Label("Varaaja:"), varaaja,
                 new Label("Kesto:"), kesto,
                 new Label("Alkupäivä:"), alkupaiva,
-                tallenna, uusi2, tyhjenna2
+                tallenna, tyhjenna2
         );
     }
     private VBox view3() {
@@ -196,7 +355,7 @@ public class Main extends Application {
                 new Label("Puhelin:"), AsiakasPuhelin,
                 new Label("Osoite:"), AsiakasOsoite,
                 new Label("Mökin numero:"), AsiakkaanMokki,
-                tallenna, uusi3, tyhjenna3
+                tallenna, tyhjenna3
         );
     }
     private VBox view4() {
@@ -206,13 +365,13 @@ public class Main extends Application {
                 new Label("Osoite:"), laskuOsoite,
                 new Label("Summa:"), laskuSumma,
                 new Label("Mökin numero:"), laskuMokkiNumero,
-                tallenna, uusi4, tyhjenna4
+                tallenna, tyhjenna4
         );
     }
     private VBox view5() {
         return new VBox(8,
                 new Label("Raportti:"), raporttiKentta,
-                tallenna, uusi5, tyhjenna5
+                tallenna, tyhjenna5
         );
     }
 
@@ -270,53 +429,55 @@ public class Main extends Application {
         }
     }
 
+
     private void saveCottage() {
         try {
-            // Get and validate user input
-            String address = osoitekenta.getText().trim();
-            if (address.isEmpty()) {
-                showError("Osoite ei voi olla tyhjä.");
+            // Read inputs from the text fields
+            String address = osoitekenta.getText().trim(); // Address and name are the same field
+            String name = osoitekenta.getText().trim();  // Use address as name as well, based on your setup
+            String sizeRaw = mkoko.getText().trim();  // Size input
+            String cottageNumberRaw = mn.getText().trim(); // Cottage number (ID)
+
+            // Validate inputs
+            if (address.isEmpty() || sizeRaw.isEmpty() || cottageNumberRaw.isEmpty()) {
+                showError("Kaikki kentät täytyy täyttää.");
                 return;
             }
 
-            String number = mn.getText().trim();
-            if (number.isEmpty()) {
-                showError("Mökin numero ei voi olla tyhjä.");
-                return;
-            }
+            // Parse the cottage number and size to integers
+            int cottageNumber = Integer.parseInt(cottageNumberRaw);
+            int size = Integer.parseInt(sizeRaw);  // Parse the size to an integer
 
-            int age = 0;
-            try {
-                age = Integer.parseInt(mika.getText());
-            } catch (NumberFormatException ex) {
-                showError("Mökin ikä pitää olla numeerinen.");
-                return;
-            }
+            // Create a new Cottage object using the constructor
+            Cottage newCottage = new Cottage();
+            newCottage.setId(cottageNumber);   // Assuming the cottage ID is passed here
+            newCottage.setName(name);  // Using address as name
+            newCottage.setLocation(address);  // Assuming address is location
+            newCottage.setDescription("N/A");  // Optional: add description logic
+            newCottage.setOwnerId(1); // Set owner ID (assuming 1 as default or set according to your logic)
+            newCottage.setPricePerNight(100.0f); // Assuming a default price, adjust accordingly
+            newCottage.setCreatedAt(LocalDateTime.now());
 
-            int size = 0;
-            try {
-                size = Integer.parseInt(mkoko.getText());
-            } catch (NumberFormatException ex) {
-                showError("Mökin koko pitää olla numeerinen.");
-                return;
-            }
+            // Set size (age is not provided in your setup, so this will be size for now)
+            newCottage.setSize(size);
 
-            // Create and save the Cottage object
-            Cottage c = new Cottage();
-            c.setAddress(address);  // Use name from osoitekenta
-            c.setName(address);  // Use name from osoitekenta
-            c.setAge(age);          // Use age from mika
-            c.setSize(size);        // Use size from mkoko
-            c.setNumber(number);    // Use number from mn
+            // Directly insert the cottage into the database
+            dbw.insertCottage(newCottage);
 
-            // Save the cottage
-            CottageHandler.getCottageHandler().createOrUpdate(c);
-
-            // Update the UI and show success message
+            // Reload the cottages to update the list
             list.setItems(CottageHandler.getCottageHandler().getCottageNames());
-            showInfo("Mökki tallennettu onnistuneesti.");
+
+            // Clear the input fields
+            osoitekenta.clear();
+            mkoko.clear();
+            mn.clear();
+
+            // Show success message
+            showInfo("Mökki luotu onnistuneesti.");
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen mökin numero tai koko: " + ex.getMessage());
         } catch (Exception ex) {
-            showError("Mökin tallennus epäonnistui: " + ex.getMessage());
+            showError("Mökin luominen epäonnistui: " + ex.getMessage());
         }
     }
 
@@ -475,6 +636,14 @@ public class Main extends Application {
         raporttiKentta.setText(report);
     }
 
+    private void deleteRaportti() {
+        // Clear the raporttiKentta (TextField or TextArea)
+        raporttiKentta.clear();
+    }
+
+
+
+
     private HikariDataSource createDataSource() {
         HikariConfig cfg = new HikariConfig();
         DatabaseConfig dbc = new DatabaseConfig();
@@ -487,6 +656,57 @@ public class Main extends Application {
         cfg.setMaximumPoolSize(10);
         return new HikariDataSource(cfg);
     }
+    private void createNewCottage() {
+        try {
+            // Read inputs from the text fields
+            String address = osoitekenta.getText().trim();
+            String name = mika.getText().trim();
+            String size = mkoko.getText().trim();
+            String cottageNumberRaw = mn.getText().trim();
+
+            // Validate inputs
+            if (address.isEmpty() || name.isEmpty() || size.isEmpty() || cottageNumberRaw.isEmpty()) {
+                showError("Kaikki kentät täytyy täyttää.");
+                return;
+            }
+
+            // Parse the cottage number to an integer
+            int cottageNumber = Integer.parseInt(cottageNumberRaw);
+
+            // Create a new Cottage object using the default constructor
+            Cottage newCottage = new Cottage();
+
+            // Set the values using the inputs
+            newCottage.setId(cottageNumber); // assuming there's a setter for 'id'
+            newCottage.setName(name);
+            newCottage.setLocation(address);
+            newCottage.setDescription(size);
+
+            // Optionally, set other fields if needed:
+            // newCottage.setOwnerId(ownerId); // if you want to set an owner ID
+            // newCottage.setPricePerNight(price); // if you want to set a price per night
+
+            // Call the appropriate handler method to save the new cottage
+            CottageHandler.getCottageHandler().addCottage(newCottage);
+
+            // Update the list with the newly added cottage
+            list.setItems(CottageHandler.getCottageHandler().getCottageNames());
+
+            // Clear the input fields
+            osoitekenta.clear();
+            mika.clear();
+            mkoko.clear();
+            mn.clear();
+
+            // Show success message
+            showInfo("Mökki luotu onnistuneesti.");
+        } catch (NumberFormatException ex) {
+            showError("Virheellinen mökin numero: " + ex.getMessage());
+        } catch (Exception ex) {
+            showError("Mökin luominen epäonnistui: " + ex.getMessage());
+        }
+    }
+
 
     @Override
     public void stop() throws Exception {

@@ -405,6 +405,22 @@ public class DatabaseWorker {
         );
     }
 
+    public void deleteReservation(int id) {
+        String sql = "DELETE FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
+        executeUpdate(sql, ps -> ps.setInt(1, id));
+    }
+
+    public void deleteCustomer(int id) {
+        String sql = "DELETE FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
+        executeUpdate(sql, ps -> ps.setInt(1, id));
+    }
+
+    public void deleteInvoice(int id) {
+        String sql = "DELETE FROM " + INVOICES_TABLE_NAME + " WHERE id = ?";
+        executeUpdate(sql, ps -> ps.setInt(1, id));
+    }
+
+
     public void createCustomer(Customer c) {
         // SQL query to insert customer data into the database
         String sql = "INSERT INTO " + CUSTOMERS_TABLE_NAME + " (user_id, username, email, phone_number, address) " +
