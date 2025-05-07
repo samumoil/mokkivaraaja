@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import java.util.List;
 
 public class InvoiceHandler {
-
     // Singleton
     private static InvoiceHandler invoiceHandler;
     private DatabaseWorker databaseWorker;
@@ -64,17 +63,12 @@ public class InvoiceHandler {
         loadInvoicesFromDatabase();
     }
 
-
-    /**
-     * If inv.getId() > 0, updates existing invoice; otherwise inserts new.
-     * After DB operation, reloads the local list and updates the UI names.
-     */
     public void createOrUpdate(Invoice inv) {
         if (inv.getId() == 0) {
-            databaseWorker.insertInvoice(inv); // new invoice
+            databaseWorker.insertInvoice(inv);
         } else {
-            databaseWorker.updateInvoice(inv); // existing invoice
+            databaseWorker.updateInvoice(inv);
         }
-        loadInvoicesFromDatabase(); // refresh internal state
+        loadInvoicesFromDatabase();
     }
 }

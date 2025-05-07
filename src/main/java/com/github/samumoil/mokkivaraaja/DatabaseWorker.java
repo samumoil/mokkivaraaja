@@ -340,26 +340,15 @@ public class DatabaseWorker {
         String sql = "UPDATE " + CUSTOMERS_TABLE_NAME +
                 " SET user_id = ?, username = ?, email = ?, phone_number = ?, address = ? WHERE id = ?";
 
-        // Print the SQL and parameters for debugging purposes
-        System.out.println("SQL: " + sql);
-        System.out.println("Parameters: ");
-        System.out.println("user_id: " + c.getUserId());
-        System.out.println("username: " + c.getName());
-        System.out.println("email: " + c.getEmail());
-        System.out.println("phone_number: " + c.getPhoneNumber());
-        System.out.println("address: " + c.getAddress());
-        System.out.println("id: " + c.getId());
-
         executeUpdate(sql, ps -> {
-            ps.setInt(1, c.getUserId());       // Set user_id
-            ps.setString(2, c.getName());      // Set username
-            ps.setString(3, c.getEmail());     // Set email
-            ps.setString(4, c.getPhoneNumber());// Set phone_number
-            ps.setString(5, c.getAddress());   // Set address
-            ps.setInt(6, c.getId());           // Set the id (used in WHERE clause)
+            ps.setInt(1, c.getUserId());
+            ps.setString(2, c.getName());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getPhoneNumber());
+            ps.setString(5, c.getAddress());
+            ps.setInt(6, c.getId());
         });
     }
-
 
     public void updateReservation(Reservation reservation) {
         String sql = "UPDATE " + RESERVATIONS_TABLE_NAME +
@@ -367,14 +356,14 @@ public class DatabaseWorker {
                 "WHERE id = ?";
 
         executeUpdate(sql, ps -> {
-            ps.setObject(1, reservation.getStartDate());  // start_date
-            ps.setInt(2, reservation.getNights());        // nights
-            ps.setObject(3, reservation.getEndDate());    // end_date
-            ps.setInt(4, reservation.getCustomerId());    // customer_id
-            ps.setInt(5, reservation.getCottageId());     // cottage_id
-            ps.setFloat(6, reservation.getTotalPrice());  // total_price
-            ps.setObject(7, reservation.getCreatedAt());  // updated_at (assuming you want to track when it was updated)
-            ps.setInt(8, reservation.getId());            // id (to target the specific reservation to update)
+            ps.setObject(1, reservation.getStartDate());
+            ps.setInt(2, reservation.getNights());
+            ps.setObject(3, reservation.getEndDate());
+            ps.setInt(4, reservation.getCustomerId());
+            ps.setInt(5, reservation.getCottageId());
+            ps.setFloat(6, reservation.getTotalPrice());
+            ps.setObject(7, reservation.getCreatedAt());
+            ps.setInt(8, reservation.getId());
         });
     }
 
@@ -384,10 +373,8 @@ public class DatabaseWorker {
                 "VALUES (?, ?, ?, ?, ?)";
 
         executeUpdate(sql, ps -> {
-            // Käytetään suoraan LocalDate-oliota, ei LocalDate.parse(...)
             LocalDate startDate = reservation.getStartDate();
             LocalDate endDate = reservation.getEndDate();
-
             ps.setInt(1, reservation.getUserId());
             ps.setInt(2, reservation.getCottageId());
             ps.setDate(3, Date.valueOf(startDate));
@@ -422,17 +409,15 @@ public class DatabaseWorker {
 
 
     public void createCustomer(Customer c) {
-        // SQL query to insert customer data into the database
         String sql = "INSERT INTO " + CUSTOMERS_TABLE_NAME + " (user_id, username, email, phone_number, address) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        // Execute the update (insert) operation
         executeUpdate(sql, ps -> {
-            ps.setInt(1, c.getUserId());  // Set the user_id value
-            ps.setString(2, c.getName());  // Set the username
-            ps.setString(3, c.getEmail()); // Set the email
-            ps.setString(4, c.getPhoneNumber()); // Set the phone number
-            ps.setString(5, c.getAddress()); // Set the address
+            ps.setInt(1, c.getUserId());
+            ps.setString(2, c.getName());
+            ps.setString(3, c.getEmail());
+            ps.setString(4, c.getPhoneNumber());
+            ps.setString(5, c.getAddress());
         });
     }
 }

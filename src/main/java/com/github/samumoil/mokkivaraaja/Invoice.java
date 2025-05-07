@@ -115,7 +115,7 @@ public class Invoice {
         public String getAddress() {
                 Customer customer = getCustomer();
                 if (customer != null) {
-                        return customer.getAddress(); // Adjust if address includes postal code/city
+                        return customer.getAddress();
                 } else {
                         return "Ei osoitetta";
                 }
@@ -128,7 +128,7 @@ public class Invoice {
         public String getCottageNumber() {
                 Cottage cottage = getCottage();
                 if (cottage != null) {
-                        return String.valueOf(cottage.getId()); // Or use cottage.getName() if available
+                        return String.valueOf(cottage.getId());
                 } else {
                         return "Tuntematon mökki";
                 }
@@ -157,7 +157,7 @@ public class Invoice {
                         if (parts.length == 2) {
                                 customer.setFirstName(parts[0]);
                                 customer.setLastName(parts[1]);
-                                CustomerHandler.getCustomerHandler().updateCustomer(customer); // Persist change
+                                CustomerHandler.getCustomerHandler().updateCustomer(customer);
                         }
                 }
         }
@@ -166,13 +166,13 @@ public class Invoice {
                 Customer customer = getCustomer();
                 if (customer != null && address != null && !address.trim().isEmpty()) {
                         customer.setAddress(address.trim());
-                        CustomerHandler.getCustomerHandler().updateCustomer(customer); // Persist change
+                        CustomerHandler.getCustomerHandler().updateCustomer(customer);
                 }
         }
 
         public void setAmount(double amount) {
                 this.price = (float) amount;
-                InvoiceHandler.getInvoiceHandler().createOrUpdate(this); // Persist change
+                InvoiceHandler.getInvoiceHandler().createOrUpdate(this);
         }
 
         public void setCottageNumber(String cottageNumber) {
@@ -182,10 +182,9 @@ public class Invoice {
                         Reservation reservation = getReservation();
                         if (cottage != null && reservation != null) {
                                 reservation.setCottageId(cottageId);
-                                ReservationHandler.getReservationHandler().updateReservation(reservation); // Persist change
+                                ReservationHandler.getReservationHandler().updateReservation(reservation);
                         }
                 } catch (NumberFormatException e) {
-                        // Optionally log invalid input
                 }
         }
 

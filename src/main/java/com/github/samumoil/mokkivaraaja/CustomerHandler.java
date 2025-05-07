@@ -6,8 +6,7 @@ import javafx.collections.ObservableList;
 import java.util.List;
 
 public class CustomerHandler {
-
-    // Let's use a "Singleton"
+    // Singleton
     private static CustomerHandler customerHandler;
     private DatabaseWorker databaseWorker;
     private List<Customer> allCustomers;
@@ -63,16 +62,13 @@ public class CustomerHandler {
     }
 
     public void createOrUpdate(Customer c) {
-        // First, check if the customer already exists by their ID
         Customer existingCustomer = getCustomerById(c.getId());
 
         if (existingCustomer != null) {
-            // If the customer exists, update the customer
             updateCustomer(c);
         } else {
-            // If the customer does not exist, create a new customer
-            databaseWorker.createCustomer(c);  // You need to implement this in your DatabaseWorker class
-            loadCustomersFromDatabase();  // Refresh the internal customer list after insertion
+            databaseWorker.createCustomer(c);
+            loadCustomersFromDatabase();
         }
     }
 
@@ -83,6 +79,6 @@ public class CustomerHandler {
 
     public void updateCustomer(Customer customer) {
         databaseWorker.updateCustomer(customer);
-        loadCustomersFromDatabase(); // Refresh internal list
+        loadCustomersFromDatabase();
     }
 }
