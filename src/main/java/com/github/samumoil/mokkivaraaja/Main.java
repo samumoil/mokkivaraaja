@@ -407,33 +407,79 @@ public class Main extends Application {
 
     private void saveInvoice() {
         try {
+            // 1) Read the cottage number from the form
+            String cottageNum = laskuMokkiNumero.getText().trim();
+            if (cottageNum.isEmpty()) {
+                showError("Anna mökin numero.");
+                return;
+            }
+
+            // 2) Find a matching reservation automatically
+            Reservation found = null;
+            for (Reservation r : ReservationHandler.getReservationHandler().getAllReservations()) {
+                if (r.getCottageNumber().equals(cottageNum)) {
+                    // you might refine this: pick the most recent, or the one without invoice yet
+                    found = r;
+                    break;
+                }
+            }
+            if (found == null) {
+                showError("Varausta ei löytynyt mökin numerolla " + cottageNum);
+                return;
+            }
+
+            // 3) Build the Invoice, attach the found Reservation
             Invoice inv = new Invoice();
-            inv.setRecipient(laskuSaaja.getText().trim());
-            inv.setAddress(laskuOsoite.getText().trim());
-            inv.setAmount(Double.parseDouble(laskuSumma.getText()));
-            inv.setCottageNumber(laskuMokkiNumero.getText().trim());
+            inv.setReservation(found);
 
-            // Create a Reservation and set it to the Invoice
-            Reservation reservation = new Reservation();
-            reservation.setId(42);  // Set a valid Reservation ID
-            inv.setReservation(reservation);  // Ensure Reservation is set
+            // 4) Recipient & Address (pulled from the customer on the reservation)
+            inv.setRecipient(inv.getCustomer().getName());
+            inv.setAddress(inv.getCustomer().getAddress());
 
-            // Call the createOrUpdate method
+            // 5) Parse and set the amount safely (strip €, replace comma → dot)
+            String rawAmount = laskuSumma.getText()
+                    .replace("€","")
+                    .replace(",",".")
+                    .trim();
+            double amount = Double.parseDouble(rawAmount);
+            inv.setAmount(amount);
+
+            // 6) Persist only by insertion (never updates existing)
             InvoiceHandler.getInvoiceHandler().createOrUpdate(inv);
 
-            // Update the list
+            // 7) Refresh the UI
             list.setItems(InvoiceHandler.getInvoiceHandler().getInvoiceNames());
-
-            // Show success message
             showInfo("Lasku tallennettu onnistuneesti.");
-        } catch (Exception ex) {
+        }
+        catch (NumberFormatException ex) {
+            showError("Virheellinen summa: " + ex.getMessage());
+        }
+        catch (Exception ex) {
             showError("Laskun tallennus epäonnistui: " + ex.getMessage());
         }
     }
 
     private void saveReport() {
-        showInfo("Raportin tallennus ei ole vielä toteutettu.");
+        // 1) Fetch the aggregated data from the DB
+        ReportData rd = dbw.getReportData();
+
+        // 2) Build a human-readable report string
+        String report =
+                "Raportti:\n" +
+                        "  Mökkien määrä: "    + rd.getCottageCount()     + "\n" +
+                        "  Asiakkaiden määrä: " + rd.getCustomerCount()   + "\n" +
+                        "  Varausten määrä: "   + rd.getReservationCount()+ "\n" +
+                        "  Laskujen yhteissumma: " + String.format("%.2f €", rd.getTotalInvoiceSum());
+
+        // 3a) Show it in your raporttiKentta TextField:
+        raporttiKentta.setText(report);
+
+        // —or—
+        // 3b) If you’d rather pop it up in an alert, swap the two lines:
+        // showInfo(report);
+        // raporttiKentta.clear();
     }
+
 
     private HikariDataSource createDataSource() {
         HikariConfig cfg = new HikariConfig();
