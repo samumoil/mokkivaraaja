@@ -1,4 +1,7 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.object;
+
+import com.github.samumoil.mokkivaraaja.domain.handler.CustomerHandler;
+import com.github.samumoil.mokkivaraaja.domain.handler.CottageHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

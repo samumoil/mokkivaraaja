@@ -1,4 +1,9 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.object;
+
+import com.github.samumoil.mokkivaraaja.domain.handler.CottageHandler;
+import com.github.samumoil.mokkivaraaja.domain.handler.CustomerHandler;
+import com.github.samumoil.mokkivaraaja.domain.handler.InvoiceHandler;
+import com.github.samumoil.mokkivaraaja.domain.handler.ReservationHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,12 +18,6 @@ public class Invoice {
         private int reservationId;
 
         public Invoice() {
-                this.id = 0;
-                this.price = 0.0f;
-                this.dueDate = LocalDate.now().plusDays(14);
-                this.status = "pending";
-                this.createdAt = LocalDateTime.now();
-                this.reservationId = 0;
         }
 
         public Invoice(

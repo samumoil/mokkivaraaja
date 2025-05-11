@@ -1,5 +1,7 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.object.Customer;
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -49,6 +51,10 @@ public class CustomerHandler {
     public ObservableList<String> getCustomerNames() {
         loadCustomersFromDatabase();
         return customerNames;
+    }
+
+    public Customer getCustomerByWildCardStuff(String pattern) {
+        return databaseWorker.getCustomerByNameLike(pattern);
     }
 
     public Customer getCustomerById(int id) {

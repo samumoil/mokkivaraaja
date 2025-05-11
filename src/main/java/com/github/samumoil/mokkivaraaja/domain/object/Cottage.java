@@ -1,4 +1,4 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.object;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -14,14 +14,7 @@ public class Cottage {
     private float pricePerNight;
 
     public Cottage() {
-        this.id = 0;
-        this.name = "";
-        this.description = "";
-        this.location = "";
-        this.capacity = 0;
-        this.createdAt = LocalDateTime.now();
-        this.ownerId = 0;
-        this.pricePerNight = 0.0f;
+
     }
 
     public int getId() { return id; }

@@ -1,5 +1,7 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
+import com.github.samumoil.mokkivaraaja.domain.object.Reservation;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.List;
@@ -56,7 +58,16 @@ public class ReservationHandler {
         }
         return null;
     }
-
+    /**
+    public Reservation getReservationById(int id) {
+        for (Reservation r : allReservations) {
+            if (r.getId() == id) {
+                return r;
+            }
+        }
+        return null;
+    }
+    */
     public void createOrUpdate(Reservation r) {
         if (r.getId() == 0) {
             createReservation(r);

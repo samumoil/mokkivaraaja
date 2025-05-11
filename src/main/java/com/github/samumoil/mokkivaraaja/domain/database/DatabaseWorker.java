@@ -1,14 +1,13 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.database;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
-import com.github.samumoil.mokkivaraaja.ReportData;
+
+import com.github.samumoil.mokkivaraaja.domain.object.*;
 
 @FunctionalInterface
 interface ResultSetHandler<T> {
@@ -63,7 +62,7 @@ public class DatabaseWorker {
         }
     }
 
-    protected Cottage getCottageById(int id) {
+    public Cottage getCottageById(int id) {
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -82,7 +81,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected List<Cottage> getCottages() {
+    public List<Cottage> getCottages() {
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Cottage> list = new ArrayList<>();
@@ -102,7 +101,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected Reservation getReservationById(int id) {
+    public Reservation getReservationById(int id) {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -119,7 +118,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected List<Reservation> getReservations() {
+    public List<Reservation> getReservations() {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Reservation> list = new ArrayList<>();
@@ -137,7 +136,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected Customer getCustomerById(int id) {
+    public Customer getCustomerById(int id) {
         String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -154,7 +153,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected Customer getCustomerByNameLike(String pattern) {
+    public Customer getCustomerByNameLike(String pattern) {
         String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
         return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
             if (rs.next()) {

@@ -8,4 +8,10 @@ module com.github.samumoil.mokkivaraaja {
 
     opens com.github.samumoil.mokkivaraaja;
     exports com.github.samumoil.mokkivaraaja;
+    exports com.github.samumoil.mokkivaraaja.domain.handler;
+    opens com.github.samumoil.mokkivaraaja.domain.handler;
+    exports com.github.samumoil.mokkivaraaja.domain.database;
+    opens com.github.samumoil.mokkivaraaja.domain.database;
+    exports com.github.samumoil.mokkivaraaja.domain.object;
+    opens com.github.samumoil.mokkivaraaja.domain.object;
 }

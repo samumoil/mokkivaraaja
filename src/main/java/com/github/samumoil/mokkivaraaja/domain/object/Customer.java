@@ -1,4 +1,4 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.object;
 
 public class Customer {
 

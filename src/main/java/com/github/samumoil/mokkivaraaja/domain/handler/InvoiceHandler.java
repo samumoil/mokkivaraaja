@@ -1,5 +1,8 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.object.Cottage;
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
+import com.github.samumoil.mokkivaraaja.domain.object.Invoice;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.List;

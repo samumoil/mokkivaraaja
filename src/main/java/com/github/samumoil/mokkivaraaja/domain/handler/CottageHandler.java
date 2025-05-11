@@ -1,5 +1,7 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.object.Cottage;
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -11,6 +13,7 @@ public class CottageHandler {
     private DatabaseWorker databaseWorker;
     private List<Cottage> allCottages;
     private ObservableList<String> cottageNames;
+
     private CottageHandler(DatabaseWorker dbw) {
         this.databaseWorker = dbw;
         this.cottageNames = FXCollections.observableArrayList();

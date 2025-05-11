@@ -1,4 +1,4 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.database;
 
 import java.io.IOException;
 import java.io.InputStream;
