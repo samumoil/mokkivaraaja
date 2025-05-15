@@ -15,6 +15,24 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+/**
+ * The Main class serves as the entry point for the application
+ * and extends the JavaFX Application class to create a graphical user interface.
+ * <p>
+ * This class is responsible for initializing the user interface, managing views,
+ * and integrating with various submodules, such as cottage, customer, reservation,
+ * invoice, and report management systems. It also includes functionality for
+ * searching and toggling between administrative and user views.
+ * <p>
+ * Key functionalities of this class include:
+ * <ul>
+ * <li>Initializing and configuring visual components like buttons, combo boxes, and text fields.</li>
+ * <li>Switching between views based on the selected options in the graphical interface.</li>
+ * <li>Performing search operations in different modules (e.g., cottages, customers, reservations).</li>
+ * <li>Establishing a database connection using HikariCP for efficient connection pooling.</li>
+ * <li>Handling application startup and termination processes.</li>
+ * </ul>
+ */
 public class Main extends Application {
     private final Region duunariNakyma = new MainDuunariController().getView();
     private final HikariDataSource dataSource = createDataSource();
@@ -27,7 +45,6 @@ public class Main extends Application {
         CustomerHandler.createCustomerHandler(dbw);
         ReservationHandler.createReservationHandler(dbw);
         InvoiceHandler.createInvoiceHandler(dbw);
-
     }
 
     private final CottageManagementUI cottageUI = new CottageManagementUI();
@@ -40,22 +57,23 @@ public class Main extends Application {
     private TextField hakukentta;
     private Button hakuButton;
 
-
     private final BorderPane adminDuunariButtonContainer = new BorderPane();
     private final Region root = adminDuunariButtonContainer;
     private final BorderPane adminView = new BorderPane();
     private final Scene pohja = new Scene(root);
-    private Node createTopBar(){
+
+    private Node createTopBar() {
         return new HBox(10,
-                new Label("Valitse näkymä:"), viewChooser,
-                new Label("Haku:"), hakukentta, hakuButton
+                 new Label("Valitse näkymä:"), viewChooser,
+                 new Label("Haku:"), hakukentta, hakuButton
         );
     }
-    private Node createBotBar(){
+
+    private Node createBotBar() {
         ToggleButton admin = new ToggleButton("Admin");
         ToggleButton duunari = new ToggleButton("Duunari");
 
-        duunari.setOnAction(actionEvent -> adminDuunariButtonContainer.setCenter(duunariNakyma) );
+        duunari.setOnAction(actionEvent -> adminDuunariButtonContainer.setCenter(duunariNakyma));
 
         admin.setOnAction(actionEvent -> adminDuunariButtonContainer.setCenter(adminView));
 
@@ -66,6 +84,7 @@ public class Main extends Application {
 
         return asettele;
     }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -99,8 +118,6 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-
-
     private void switchView() {
         switch (viewChooser.getValue()) {
             case "Mökit":
@@ -120,21 +137,58 @@ public class Main extends Application {
                 break;
         }
     }
+
+    /**
+     * Performs a unified search operation based on user input and the selected view category.
+     * Searches for different types of entities (e.g., cottages, customers, reservations, invoices)
+     * or displays an appropriate error message if the functionality is not implemented for the selected category.
+     * <p>
+     * The method retrieves the user input from a text field, validates it, and then invokes the corresponding
+     * search functionality for the selected view type. If the input is empty, an error message is displayed.
+     * <p>
+     * Supported view categories:
+     * - "Mökit": Searches for cottage details.
+     * - "Asiakkaat": Searches for customer details.
+     * - "Varaukset": Searches for reservation details.
+     * - "Laskut": Searches for invoice details.
+     * - "Raportit": Displays an error message indicating that the functionality is not implemented.
+     * <p>
+     * Error Handling:
+     * - Displays an error message if the input is empty.
+     * - Displays an error message for unsupported or unimplemented view categories.
+     */
     private void doUnifiedSearch() {
         String userInput = hakukentta.getText().trim();
-        if (userInput.isEmpty()) { showError("Anna ID tai osa nimestä"); return; }
+        if (userInput.isEmpty()) {
+            showError("Anna ID tai osa nimestä");
+            return;
+        }
         switch (viewChooser.getValue()) {
-            case "Mökit":      cottageUI.searchAndFillCottageDetails(userInput);  break;
-            case "Asiakkaat":  customerUI.searchAndFillCustomerDetails(userInput); break;
-            case "Varaukset":  reservationUI.searchAndFillReservationDetails(userInput); break;
-            case "Laskut":     invoiceUI.searchAndFillInvoiceDetails(userInput);     break;
-            case "Raportit":   showError("Raporttitoiminto ei ole vielä toteutettu"); break;
+            case "Mökit":
+                cottageUI.searchAndFillCottageDetails(userInput);
+                break;
+            case "Asiakkaat":
+                customerUI.searchAndFillCustomerDetails(userInput);
+                break;
+            case "Varaukset":
+                reservationUI.searchAndFillReservationDetails(userInput);
+                break;
+            case "Laskut":
+                invoiceUI.searchAndFillInvoiceDetails(userInput);
+                break;
+            case "Raportit":
+                showError("Raporttitoiminto ei ole vielä toteutettu");
+                break;
         }
     }
 
-
-
-
+    /**
+     * Creates and configures a new HikariDataSource instance based on database properties.
+     * This method sets up the connection pool configurations such as JDBC URL, username, password,
+     * prepared statement caching, and maximum pool size.
+     *
+     * @return a fully configured HikariDataSource instance ready for use in database operations.
+     */
     private HikariDataSource createDataSource() {
         HikariConfig cfg = new HikariConfig();
         DatabaseConfig dbc = new DatabaseConfig();

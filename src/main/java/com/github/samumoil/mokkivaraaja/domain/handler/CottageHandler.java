@@ -7,6 +7,11 @@ import javafx.collections.ObservableList;
 
 import java.util.List;
 
+/**
+ * Handles the management of cottages, including loading from the database, CRUD operations,
+ * and providing an accessible list of cottages and cottage names. This class follows the
+ * Singleton design pattern to maintain a single instance of the handler throughout the application.
+ */
 public class CottageHandler {
     // Singleton
     private static CottageHandler cottageHandler;

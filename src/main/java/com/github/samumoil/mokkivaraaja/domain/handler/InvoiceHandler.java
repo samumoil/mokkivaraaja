@@ -5,8 +5,16 @@ import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
 import com.github.samumoil.mokkivaraaja.domain.object.Invoice;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import java.util.List;
 
+/**
+ * Handles the management of invoices, including loading from the database,
+ * updating, inserting, and deleting invoices. Utilizes a singleton design
+ * pattern to ensure there is only one instance of the class. The class
+ * synchronizes database operations and maintains a list of invoice names
+ * for simplified access.
+ */
 public class InvoiceHandler {
     // Singleton
     private static InvoiceHandler invoiceHandler;

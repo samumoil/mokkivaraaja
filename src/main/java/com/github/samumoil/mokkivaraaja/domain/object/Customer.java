@@ -1,9 +1,14 @@
 package com.github.samumoil.mokkivaraaja.domain.object;
 
+/**
+ * The Customer class represents a customer entity and encapsulates details
+ * including their unique identification, associated user ID, name, email,
+ * phone number, and address. It provides getter and setter methods for
+ * managing these details and additional utility methods for handling names.
+ */
 public class Customer {
-
     private int id;
-    private int userId;           // ← new field
+    private int userId;
     private String name;
     private String email;
     private String phoneNumber;
@@ -11,7 +16,7 @@ public class Customer {
 
     public Customer() {
         this.id = 0;
-        this.userId = 0;          // initialize
+        this.userId = 0;
         this.name = "Malli Mallikas";
         this.email = "example@example.com";
         this.phoneNumber = "0441234567";
@@ -31,7 +36,6 @@ public class Customer {
         return id;
     }
 
-    /** the foreign‐key into your users table */
     public int getUserId() {
         return userId;
     }
@@ -56,7 +60,9 @@ public class Customer {
         this.id = id;
     }
 
-    /** setter for the new userId field */
+    /**
+     * setter for the new userId field
+     */
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -101,7 +107,6 @@ public class Customer {
     public void setLastName(String part) {
     }
 
-    // Implementing getPhone() method
     public String getPhone() {
         return phoneNumber;
     }

@@ -7,6 +7,12 @@ import javafx.collections.ObservableList;
 
 import java.util.List;
 
+/**
+ * The CustomerHandler class is responsible for managing customer-related operations,
+ * including retrieving, creating, updating, and deleting customers. It employs
+ * the singleton design pattern to ensure a single instance is used across the application.
+ * The class interacts with a DatabaseWorker instance for database-related operations.
+ */
 public class CustomerHandler {
     // Singleton
     private static CustomerHandler customerHandler;
@@ -24,6 +30,7 @@ public class CustomerHandler {
         customerHandler = new CustomerHandler(dbw);
         return customerHandler;
     }
+
     public static CustomerHandler getCustomerHandler() {
         return customerHandler;
     }

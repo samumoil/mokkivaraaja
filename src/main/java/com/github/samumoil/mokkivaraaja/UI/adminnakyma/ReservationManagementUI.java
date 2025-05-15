@@ -12,13 +12,20 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class ReservationManagementUI  {
-    private final TextField varausIdKentta    = new TextField();
+/**
+ * The ReservationManagementUI class provides a user interface for managing
+ * reservations in a cottage reservation system. It allows users to perform
+ * actions such as viewing reservation details, creating or updating reservations,
+ * and deleting reservations. The interface includes input fields, buttons, and
+ * a list view for interacting with the reservation data.
+ */
+public class ReservationManagementUI {
+    private final TextField varausIdKentta = new TextField();
     private final TextField varausMokkiNumero = new TextField();
-    private final TextField varaaja           = new TextField();
-    private final TextField kesto             = new TextField();
-    private final TextField alkupaiva         = new TextField();
-    private final TextField loppupaiva        = new TextField();
+    private final TextField varaaja = new TextField();
+    private final TextField kesto = new TextField();
+    private final TextField alkupaiva = new TextField();
+    private final TextField loppupaiva = new TextField();
     private final Button tallenna = new Button("Tallenna");
     private final Button tyhjenna = new Button("Tyhjennä");
 
@@ -26,7 +33,20 @@ public class ReservationManagementUI  {
     private final BorderPane varausNakyma = new BorderPane();
 
 
-    public ReservationManagementUI(){
+    /**
+     * Constructs the ReservationManagementUI and initializes the reservation management user interface.
+     * <p>
+     * The constructor initializes the following:
+     * - Populates the reservation list with names retrieved from the `ReservationHandler`.
+     * - Sets up event handlers for the "clear" and "save" buttons, linking them to the corresponding
+     * methods for deleting and saving reservations.
+     * - Configures the layout of the UI, placing reservation details in the center and the reservation
+     * list on the right side of the main view.
+     * <p>
+     * This UI enables users to view, create, update, and delete reservations, while interacting with
+     * the underlying reservation management system through `ReservationHandler`.
+     */
+    public ReservationManagementUI() {
         list.setItems(ReservationHandler.getReservationHandler().getReservationNames());
 
         tyhjenna.setOnAction(actionEvent -> deleteReservation());
@@ -35,21 +55,29 @@ public class ReservationManagementUI  {
         varausNakyma.setCenter(reservationDetails());
         varausNakyma.setRight(list);
     }
-    public Region getView(){
+
+    public Region getView() {
         return varausNakyma;
     }
 
     private VBox reservationDetails() {
         return new VBox(8,
-                new Label("Varaus-ID:"), varausIdKentta,
-                new Label("Mökin numero:"), varausMokkiNumero,
-                new Label("Varaaja:"), varaaja,
-                new Label("Kesto:"), kesto,
-                new Label("Alkupäivä:"), alkupaiva,
-                new Label("Loppupäivä:"), loppupaiva, tallenna, tyhjenna
+                 new Label("Varaus-ID:"), varausIdKentta,
+                 new Label("Mökin numero:"), varausMokkiNumero,
+                 new Label("Varaaja:"), varaaja,
+                 new Label("Kesto:"), kesto,
+                 new Label("Alkupäivä:"), alkupaiva,
+                 new Label("Loppupäivä:"), loppupaiva, tallenna, tyhjenna
         );
     }
 
+    /**
+     * Searches for a reservation by its ID and fills the reservation details
+     * into the corresponding UI fields. If the reservation is not found, displays
+     * an error message. If the ID is invalid, an appropriate error message is shown.
+     *
+     * @param id the ID of the reservation to search for, as a string
+     */
     public void searchAndFillReservationDetails(String id) {
         try {
             Reservation r = ReservationHandler.getReservationHandler().getReservationById(Integer.parseInt(id));
@@ -59,9 +87,9 @@ public class ReservationManagementUI  {
                 kesto.setText(String.valueOf(r.getDuration()));
                 alkupaiva.setText(r.getStartDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
                 loppupaiva.setText(r.getEndDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-            } else showError("Varausta ei löytynyt: "+id);
+            } else showError("Varausta ei löytynyt: " + id);
         } catch (NumberFormatException ex) {
-            showError("Virheellinen varaus-ID: "+id);
+            showError("Virheellinen varaus-ID: " + id);
         }
     }
 
@@ -93,8 +121,8 @@ public class ReservationManagementUI  {
             }
 
             LocalDate startDate = LocalDate.parse(
-                    alkupaiva.getText().trim(),
-                    DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                     alkupaiva.getText().trim(),
+                     DateTimeFormatter.ofPattern("dd.MM.yyyy")
             );
             LocalDate endDate = startDate.plusDays(duration);
 
@@ -107,14 +135,12 @@ public class ReservationManagementUI  {
             ReservationHandler.getReservationHandler().createOrUpdate(r);
 
             list.setItems(ReservationHandler
-                    .getReservationHandler()
-                    .getReservationNames());
+                     .getReservationHandler()
+                     .getReservationNames());
             showInfo("Varaus tallennettu onnistuneesti.");
-        }
-        catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             showError("Virheellinen numero‐syöte: " + ex.getMessage());
-        }
-        catch (DateTimeParseException ex) {
+        } catch (DateTimeParseException ex) {
             showError("Päivämäärän muoto virheellinen, käytä pp.kk.vvvv-muotoa.");
         }
     }
@@ -144,20 +170,12 @@ public class ReservationManagementUI  {
             alkupaiva.clear();
 
             showInfo("Varaus ID " + id + " poistettu.");
-        }
-        catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             showError("Virheellinen varaus-ID: " + ex.getMessage());
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             showError("Varausen poisto epäonnistui: " + ex.getMessage());
         }
     }
-
-
-
-
-
-
 
     private void showError(String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR);
