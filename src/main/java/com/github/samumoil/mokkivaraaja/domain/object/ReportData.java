@@ -1,7 +1,12 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.object;
 
 import java.time.LocalDate;
 
+/**
+ * The ReportData class represents a report that contains information related to transactions
+ * or summaries for specific data points such as cottages, customers, reservations, and invoices.
+ * It provides attributes for both individual transaction data as well as aggregated summary data.
+ */
 public class ReportData {
     private int id;
     private LocalDate date;
@@ -95,7 +100,7 @@ public class ReportData {
     public String toString() {
         if (cottageCount > 0) {
             return "ReportData{cottageCount=" + cottageCount + ", customerCount=" + customerCount
-                    + ", reservationCount=" + reservationCount + ", totalInvoiceSum=" + totalInvoiceSum + "}";
+                     + ", reservationCount=" + reservationCount + ", totalInvoiceSum=" + totalInvoiceSum + "}";
         } else {
             return "ReportData{id=" + id + ", date=" + date + ", description='" + description + "', amount=" + amount + "}";
         }

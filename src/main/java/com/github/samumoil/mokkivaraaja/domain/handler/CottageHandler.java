@@ -1,16 +1,24 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.object.Cottage;
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.List;
 
+/**
+ * Handles the management of cottages, including loading from the database, CRUD operations,
+ * and providing an accessible list of cottages and cottage names. This class follows the
+ * Singleton design pattern to maintain a single instance of the handler throughout the application.
+ */
 public class CottageHandler {
     // Singleton
     private static CottageHandler cottageHandler;
     private DatabaseWorker databaseWorker;
     private List<Cottage> allCottages;
     private ObservableList<String> cottageNames;
+
     private CottageHandler(DatabaseWorker dbw) {
         this.databaseWorker = dbw;
         this.cottageNames = FXCollections.observableArrayList();

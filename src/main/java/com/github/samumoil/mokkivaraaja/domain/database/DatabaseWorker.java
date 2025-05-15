@@ -1,25 +1,60 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.database;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import java.sql.*;
-import com.github.samumoil.mokkivaraaja.ReportData;
 
+import com.github.samumoil.mokkivaraaja.domain.object.*;
+
+/**
+ * A functional interface for handling the {@link ResultSet} from a database query.
+ * This interface is intended to define a single method that processes a {@link ResultSet}
+ * and returns a result of type <T>.
+ *
+ * @param <T> the type of the result produced by processing the {@link ResultSet}
+ */
 @FunctionalInterface
 interface ResultSetHandler<T> {
     T handle(ResultSet rs) throws SQLException;
 }
 
+/**
+ * Represents a functional interface used for setting parameters in a {@link PreparedStatement}.
+ * This interface is typically used in conjunction with methods that execute SQL queries or updates.
+ * <p>
+ * A {@code PreparedStatementSetter} allows the caller to define how the parameters in the
+ * prepared statement are configured before the execution of an SQL query or update.
+ * <p>
+ * It is used to provide a reusable way to set the parameters in prepared statements, separating
+ * this operation from the execution logic.
+ * <p>
+ * Functional Method:
+ * - {@link #setParameters(PreparedStatement)}: Configures the parameters of a {@link PreparedStatement}.
+ * <p>
+ * This interface helps achieve cleaner separation of concerns when working with database operations.
+ */
 @FunctionalInterface
 interface PreparedStatementSetter {
     void setParameters(PreparedStatement ps) throws SQLException;
 }
 
+/**
+ * The {@code DatabaseWorker} class provides a collection of methods for interacting with
+ * a relational database. It allows querying, inserting, updating, and deleting data
+ * from various tables such as cottages, reservations, customers, and invoices.
+ * This class is designed to manage database-related operations efficiently
+ * through the use of prepared statements and result set handlers.
+ * <p>
+ * Fields such as {@code COTTAGES_TABLE_NAME}, {@code RESERVATIONS_TABLE_NAME},
+ * {@code CUSTOMERS_TABLE_NAME}, and {@code INVOICES_TABLE_NAME} store the names
+ * of specific database tables being managed.
+ * <p>
+ * The functionality includes retrieving data by ID, performing search queries,
+ * updating entities, and generating reports related to core business operations.
+ */
 public class DatabaseWorker {
     private final DataSource dataSource;
     private static final String COTTAGES_TABLE_NAME = "cottages";
@@ -31,6 +66,17 @@ public class DatabaseWorker {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Executes a SQL query using the provided SQL statement and a {@link ResultSetHandler}
+     * to process the {@link ResultSet}.
+     *
+     * @param <T>     the type of the value returned by the handler
+     * @param sql     the SQL query to be executed
+     * @param handler a {@link ResultSetHandler} to process the {@link ResultSet} and
+     *                return the desired result
+     * @return the result of processing the {@link ResultSet} using the given handler
+     * @throws RuntimeException if a {@link SQLException} occurs during query execution
+     */
     private <T> T executeQuery(String sql, ResultSetHandler<T> handler) {
         try (Connection c = dataSource.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
@@ -41,6 +87,18 @@ public class DatabaseWorker {
         }
     }
 
+    /**
+     * Executes a SQL query using the provided SQL statement, a {@link PreparedStatementSetter}
+     * for setting parameters in the {@link PreparedStatement}, and a {@link ResultSetHandler}
+     * for processing the {@link ResultSet}.
+     *
+     * @param <T>     the type of the value returned by the handler
+     * @param sql     the SQL query to be executed
+     * @param setter  a {@link PreparedStatementSetter} used to set parameters in the prepared statement
+     * @param handler a {@link ResultSetHandler} to process the {@link ResultSet} and return the desired result
+     * @return the result of processing the {@link ResultSet} using the given handler
+     * @throws RuntimeException if a {@link SQLException} occurs during query execution
+     */
     private <T> T executeQuery(String sql, PreparedStatementSetter setter, ResultSetHandler<T> handler) {
         try (Connection c = dataSource.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
@@ -53,6 +111,16 @@ public class DatabaseWorker {
         }
     }
 
+    /**
+     * Executes a SQL update using the provided SQL statement and a {@link PreparedStatementSetter}
+     * for setting parameters in the {@link PreparedStatement}. This method is used to perform
+     * database operations such as insert, update, or delete.
+     *
+     * @param sql    the SQL statement to be executed
+     * @param setter a {@link PreparedStatementSetter} used to set parameters in the prepared statement
+     * @return the number of rows affected by the executed SQL update
+     * @throws RuntimeException if a {@link SQLException} occurs during the execution of the update
+     */
     private int executeUpdate(String sql, PreparedStatementSetter setter) {
         try (Connection c = dataSource.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
@@ -63,7 +131,7 @@ public class DatabaseWorker {
         }
     }
 
-    protected Cottage getCottageById(int id) {
+    public Cottage getCottageById(int id) {
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -82,7 +150,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected List<Cottage> getCottages() {
+    public List<Cottage> getCottages() {
         String sql = "SELECT id, name, description, location, capacity, created_at, owner_id, price_per_night FROM " + COTTAGES_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Cottage> list = new ArrayList<>();
@@ -102,7 +170,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected Reservation getReservationById(int id) {
+    public Reservation getReservationById(int id) {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -119,7 +187,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected List<Reservation> getReservations() {
+    public List<Reservation> getReservations() {
         String sql = "SELECT id, start_date, end_date, user_id, cottage_id, created_at FROM " + RESERVATIONS_TABLE_NAME;
         return executeQuery(sql, rs -> {
             List<Reservation> list = new ArrayList<>();
@@ -137,7 +205,7 @@ public class DatabaseWorker {
         });
     }
 
-    protected Customer getCustomerById(int id) {
+    public Customer getCustomerById(int id) {
         String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE id = ?";
         return executeQuery(sql, ps -> ps.setInt(1, id), rs -> {
             if (rs.next()) {
@@ -154,7 +222,18 @@ public class DatabaseWorker {
         });
     }
 
-    protected Customer getCustomerByNameLike(String pattern) {
+    /**
+     * Retrieves a customer whose username matches the given pattern.
+     * This search uses a SQL LIKE query to find a customer whose username
+     * matches the specified pattern, and it returns the first match found.
+     *
+     * @param pattern the SQL LIKE pattern to match against the username field.
+     *                The pattern should include the '%' wildcard as necessary
+     *                for partial matches.
+     * @return the {@code Customer} object matching the provided pattern, or
+     * {@code null} if no match is found.
+     */
+    public Customer getCustomerByNameLike(String pattern) {
         String sql = "SELECT id, user_id, username, email, phone_number, address FROM " + CUSTOMERS_TABLE_NAME + " WHERE username LIKE ? LIMIT 1";
         return executeQuery(sql, ps -> ps.setString(1, pattern), rs -> {
             if (rs.next()) {
@@ -211,31 +290,11 @@ public class DatabaseWorker {
 
     public ReportData getReportData() {
         return new ReportData(
-                getCottageCount(),
-                getCustomerCount(),
-                getReservationCount(),
-                getTotalInvoiceSum()
+                 getCottageCount(),
+                 getCustomerCount(),
+                 getReservationCount(),
+                 getTotalInvoiceSum()
         );
-    }
-
-    public Invoice getInvoiceByIdDelegate(int id) {
-        return getInvoiceById(id);
-    }
-
-    public Customer getCustomerByIdDelegate(int id) {
-        return getCustomerById(id);
-    }
-
-    public Customer getCustomerByNameLikeDelegate(String p) {
-        return getCustomerByNameLike(p);
-    }
-
-    public Cottage getCottageByIdDelegate(int id) {
-        return getCottageById(id);
-    }
-
-    public Reservation getReservationByIdDelegate(int id) {
-        return getReservationById(id);
     }
 
     public List<Invoice> getInvoices() {
@@ -338,7 +397,7 @@ public class DatabaseWorker {
 
     public void updateCustomer(Customer c) {
         String sql = "UPDATE " + CUSTOMERS_TABLE_NAME +
-                " SET user_id = ?, username = ?, email = ?, phone_number = ?, address = ? WHERE id = ?";
+                 " SET user_id = ?, username = ?, email = ?, phone_number = ?, address = ? WHERE id = ?";
 
         executeUpdate(sql, ps -> {
             ps.setInt(1, c.getUserId());
@@ -352,8 +411,8 @@ public class DatabaseWorker {
 
     public void updateReservation(Reservation reservation) {
         String sql = "UPDATE " + RESERVATIONS_TABLE_NAME +
-                " SET start_date = ?, nights = ?, end_date = ?, customer_id = ?, cottage_id = ?, total_price = ?, updated_at = ? " +
-                "WHERE id = ?";
+                 " SET start_date = ?, nights = ?, end_date = ?, customer_id = ?, cottage_id = ?, total_price = ?, updated_at = ? " +
+                 "WHERE id = ?";
 
         executeUpdate(sql, ps -> {
             ps.setObject(1, reservation.getStartDate());
@@ -369,8 +428,8 @@ public class DatabaseWorker {
 
     public void createReservation(Reservation reservation) {
         String sql = "INSERT INTO " + RESERVATIONS_TABLE_NAME +
-                " (user_id, cottage_id, start_date, end_date, created_at) " +
-                "VALUES (?, ?, ?, ?, ?)";
+                 " (user_id, cottage_id, start_date, end_date, created_at) " +
+                 "VALUES (?, ?, ?, ?, ?)";
 
         executeUpdate(sql, ps -> {
             LocalDate startDate = reservation.getStartDate();
@@ -386,9 +445,9 @@ public class DatabaseWorker {
     public boolean getUserById(int userId) {
         String sql = "SELECT 1 FROM users WHERE id = ? LIMIT 1";
         return executeQuery(
-                sql,
-                ps -> ps.setInt(1, userId),
-                rs -> rs.next()
+                 sql,
+                 ps -> ps.setInt(1, userId),
+                 rs -> rs.next()
         );
     }
 
@@ -410,7 +469,7 @@ public class DatabaseWorker {
 
     public void createCustomer(Customer c) {
         String sql = "INSERT INTO " + CUSTOMERS_TABLE_NAME + " (user_id, username, email, phone_number, address) " +
-                "VALUES (?, ?, ?, ?, ?)";
+                 "VALUES (?, ?, ?, ?, ?)";
 
         executeUpdate(sql, ps -> {
             ps.setInt(1, c.getUserId());

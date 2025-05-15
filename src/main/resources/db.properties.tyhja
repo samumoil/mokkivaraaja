@@ -1,3 +1,0 @@
-db.url=jdbc:postgresql://xxx.yyy.zzz.aaa:5432/[Tietokannan nimi]
-db.username=
-db.password=

@@ -1,9 +1,18 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
+import com.github.samumoil.mokkivaraaja.domain.object.Reservation;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import java.util.List;
 
+/**
+ * The ReservationHandler class is responsible for managing reservation data
+ * and coordinating CRUD operations between the application and the database.
+ * It follows a singleton pattern to ensure only one instance is used during
+ * the application runtime.
+ */
 public class ReservationHandler {
     private static ReservationHandler reservationHandler;
     private DatabaseWorker databaseWorker;
@@ -20,6 +29,7 @@ public class ReservationHandler {
         reservationHandler = new ReservationHandler(dbw);
         return reservationHandler;
     }
+
     public static ReservationHandler getReservationHandler() {
         return reservationHandler;
     }

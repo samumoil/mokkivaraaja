@@ -1,10 +1,18 @@
-package com.github.samumoil.mokkivaraaja;
+package com.github.samumoil.mokkivaraaja.domain.handler;
 
+import com.github.samumoil.mokkivaraaja.domain.object.Customer;
+import com.github.samumoil.mokkivaraaja.domain.database.DatabaseWorker;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.List;
 
+/**
+ * The CustomerHandler class is responsible for managing customer-related operations,
+ * including retrieving, creating, updating, and deleting customers. It employs
+ * the singleton design pattern to ensure a single instance is used across the application.
+ * The class interacts with a DatabaseWorker instance for database-related operations.
+ */
 public class CustomerHandler {
     // Singleton
     private static CustomerHandler customerHandler;
@@ -22,6 +30,7 @@ public class CustomerHandler {
         customerHandler = new CustomerHandler(dbw);
         return customerHandler;
     }
+
     public static CustomerHandler getCustomerHandler() {
         return customerHandler;
     }
@@ -49,6 +58,10 @@ public class CustomerHandler {
     public ObservableList<String> getCustomerNames() {
         loadCustomersFromDatabase();
         return customerNames;
+    }
+
+    public Customer getCustomerByWildCardStuff(String pattern) {
+        return databaseWorker.getCustomerByNameLike(pattern);
     }
 
     public Customer getCustomerById(int id) {
